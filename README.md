@@ -53,6 +53,7 @@ Create
     ```
 - window.onload 이후(document.body가 존재할 때) 로드한 광고코드를 사용하여 광고를 생성합니다.
 - new gdApi.Ad( url [, opt ] )
+
     Name        | Type      | Default       | Description
     -----       | -----     | -----         | -----
     adcode      | String    | -             | 광고 호출에 사용되는 광고코드
@@ -85,6 +86,7 @@ Run
 -------------
 - 광고 실행 시점에서 생성한 광고를 실행합니다.
 - gdApi.Ad.run( [opt ] )
+
     Name            | Type      | Default   | Description
     -----           | -----     | -----     | -----
     opt             | Object    | {}        | key/value 오브젝트로 이루어진 run 메소드 옵션
@@ -149,6 +151,7 @@ Call
 -------------
 - 광고 실행 시점에서 생성한 광고를 실행합니다.
 - gdApi.Point.call( [opt ] )
+
     Name            | Type      | Default   | Description
     -----           | -----     | -----     | -----
     opt             | Object    | {}        | key/value 오브젝트로 이루어진 call 메소드 옵션
