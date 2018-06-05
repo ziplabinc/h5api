@@ -1,0 +1,19 @@
+{
+  "name": "gdApi",
+  "version": "1.0.0",
+  "description": "5gamedom HTML5 Platform Game API",
+  "main": "src/0_index.js",
+  "scripts": {},
+  "author": "ZIP-LAB Inc.",
+  "license": "UNLICENSED",
+  "private": false,
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-bump": "^0.8.0",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-uglify": "^3.0.1",
+    "grunt-git": "^1.0.6",
+    "grunt-version": "^1.1.1"
+  }
+}
