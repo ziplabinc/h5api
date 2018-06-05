@@ -4,6 +4,10 @@
 
 광고 및 포인트 기능이 포함된 5gamedom 게임 API입니다.
 
+**_현재 API의 테스트 기능은 준비 중입니다._**
+
+Current version: v1.0
+
 Installation
 -------------
 - 게임 내 메인 html file의 head Tag에서 gdapi 모듈 파일을 로드합니다.
