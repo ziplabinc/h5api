@@ -32,7 +32,7 @@ Create
 -------------
 - 게임 내에서 필요한 광고를 생성합니다.
 - 광고 생성을 수행하기 위해서는 우선 광고코드를 로드해야 합니다.
-    * 광고코드 Link : https://api.5gamedom.com/adcode.json
+    * 광고코드 Link : https://api.5gamedom.com/adcode.php
     * 광고코드 json file 구조
     ```
     {
@@ -70,9 +70,12 @@ Create
 
 ```
 window.onload = function() {
-    // jQuery getJson 함수 등을 사용하여 adcode.json을 로드합니다
-    $.getJson("https://api.5gamedom.com/adcode.json", function(data) {
-
+    // jsonp 형식으로 adcode json file을 로드합니다
+    var script = document.createElement('script');
+    script.src = '//api.5gamedom.com/adcode.php?callback=myCallback';
+    document.getElementsByTagName('head')[0].appendChild(script);
+    
+    function myCallback(data){
         // 일반형 광고
         window.normalAd = new gdApi.Ad(
             data.ad.normal.app.replace("[gn]", "24"), // 일반형 광고, 채널사코드: app, 게임no: 24
