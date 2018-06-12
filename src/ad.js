@@ -74,57 +74,57 @@ gdApi.Ad = function (adUrl, opt) {
 };
 
 gdApi.Ad.prototype._initAdsense = function () {
-    if(document.querySelector("body #mainContainer") !== null) {
-        this.mainContainer  = document.querySelector("body #mainContainer");
-        this.adVideo        = document.querySelector("body #mainContainer #adVideo");
-        this.adContainer    = document.querySelector("body #mainContainer #adContainer");
-        this.adMobileCover  = document.querySelector("body #mainContainer #adMobileCover");
-        this.adPlayImage  = document.querySelector("body #mainContainer #adPlayImage");
+    if(document.querySelector("body #adWrapper") !== null) {
+        this.adWrapper  = document.querySelector("body #adWrapper");
+        this.adPlayImage  = document.querySelector("body #adWrapper #adPlayImage");
     }else {
-        this.mainContainer = document.createElement('div');
-        this.mainContainer.id = "mainContainer";
-        window.addEventListener("resize", function () {
-        if (this.adsManager)
-            this.adsManager.resize(window.innerWidth, window.innerHeight, google.ima.ViewMode.FULLSCREEN);
-        }.bind(this));
-        document.body.appendChild(this.mainContainer);
-
-        this.adVideo = document.createElement('video');
-        this.adVideo.style.width = window.innerWidth+"px";
-        this.adVideo.style.height = window.innerHeight+"px";
-        this.adVideo.id = "adVideo";
-        this.mainContainer.appendChild(this.adVideo);
-
-        this.adContainer = document.createElement('div');
-        this.adContainer.id = "adContainer";
-        this.adContainer.style.width = window.innerWidth+"px";
-        this.adContainer.style.height = window.innerHeight+"px";
-        this.mainContainer.appendChild(this.adContainer);
+        this.adWrapper = document.createElement('div');
+        this.adWrapper.id = "adWrapper";
+        document.body.appendChild(this.adWrapper);
 
         var background = document.createElement('div');
         background.id = "adBackground";
-        this.mainContainer.appendChild(background);
+        this.adWrapper.appendChild(background);
   
-        this.adMobileCover = document.createElement('div');
-        this.adMobileCover.id = "adMobileCover";
-        this.mainContainer.appendChild(this.adMobileCover);
+        var adMobileCover = document.createElement('div');
+        adMobileCover.id = "adMobileCover";
+        this.adWrapper.appendChild(adMobileCover);
         
         if (this.image) {
-          this.mainContainer.style.backgroundColor = "#535353";
+          this.adWrapper.style.backgroundColor = "#535353";
           background.style.filter = "blur(25px)";
           background.style.backgroundImage = "url('" + this.image + "')";
   
           var image = document.createElement('img');
           image.id = "adGameImage";
           image.src = this.image;
-          this.adMobileCover.appendChild(image);
+          adMobileCover.appendChild(image);
         }
         
         this.adPlayImage = document.createElement('div'); // img
         this.adPlayImage.id = "adPlayImage";
-        this.adPlayImage.addEventListener("click", this._ad.bind(this));
-        this.adMobileCover.appendChild(this.adPlayImage);
+        adMobileCover.appendChild(this.adPlayImage);
     }
+
+    this.adMainContainer = document.createElement('div');
+    this.adMainContainer.classList.add("adMainContainer");
+    window.addEventListener("resize", function () {
+    if (this.adsManager)
+        this.adsManager.resize(window.innerWidth, window.innerHeight, google.ima.ViewMode.FULLSCREEN);
+    }.bind(this));
+    document.body.appendChild(this.adMainContainer);
+
+    this.adVideo = document.createElement('video');
+    this.adVideo.style.width = window.innerWidth+"px";
+    this.adVideo.style.height = window.innerHeight+"px";
+    this.adVideo.classList.add("adVideo");
+    this.adMainContainer.appendChild(this.adVideo);
+
+    this.adContainer = document.createElement('div');
+    this.adContainer.classList.add("adContainer");
+    this.adContainer.style.width = window.innerWidth+"px";
+    this.adContainer.style.height = window.innerHeight+"px";
+    this.adMainContainer.appendChild(this.adContainer);
 
     google.ima.settings.setVpaidMode(google.ima.ImaSdkSettings.VpaidMode.ENABLED);
     // google.ima.settings.setVpaidMode(google.ima.ImaSdkSettings.VpaidMode.INSECURE);
@@ -167,7 +167,7 @@ gdApi.Ad.prototype.run = function (opt) {
             }
 
             this.lastAdTime = Date.now();
-            this.mainContainer.style.display = "block";
+            this.adMainContainer.style.display = "block";
             
             if (typeof this.pauseGame === "function")  this.pauseGame();
 
@@ -214,12 +214,12 @@ gdApi.Ad.prototype.run = function (opt) {
     
             // wrap DOM 체크 및 생성
             if(document.querySelector("body #caulyDisplay-"+this.adUrl) !== null) {
-                document.body.removeChild(this.mainContainer);
+                document.body.removeChild(this.adContainer);
             }
-            this.mainContainer = document.createElement('div');
-            this.mainContainer.id = "caulyDisplay-"+this.adUrl;
-            this.mainContainer.classList.add("caulyDisplay");
-            document.getElementsByTagName('body')[0].appendChild(this.mainContainer);
+            this.adContainer = document.createElement('div');
+            this.adContainer.id = "caulyDisplay-"+this.adUrl;
+            this.adContainer.classList.add("caulyDisplay");
+            document.getElementsByTagName('body')[0].appendChild(this.adContainer);
             
             this.cauly_ads = new CaulyAds({
                 app_code: this.adUrl,
@@ -247,15 +247,15 @@ gdApi.Ad.prototype.run = function (opt) {
   
 gdApi.Ad.prototype._ad = function () {
     if (WG.isMobile) {
-      this.adBackground.style.opacity = 0;
-      this.adMobileCover.style.opacity = 0;
-      this.mainContainer.style.backgroundColor = "black";
+      this.adWrapper.style.display = "none";
+      this.adMainContainer.style.backgroundColor = "black";
     }
     try {
       this.adsManager.init(window.innerWidth, window.innerHeight, google.ima.ViewMode.NORMAL);
       this.adsManager.start();
       this.adPlayCount++;
     } catch (adError) {
+      debugger;
       console.error(adError);
       // 광고 실패 혹은 끝 픽시 다시 켜주기
     }
@@ -293,12 +293,13 @@ gdApi.Ad.prototype._onAdsManagerLoaded = function(adsManagerLoadedEvent) {
     }.bind(this));
   
   
-    if (!WG.isMobile)
+    if (!gdApi.isMobile)
         this._ad();
     else {
         // adsManager 로드 후 버튼 생성해야 버튼 뜨자마자 클릭해도 문제 없음.
+        this.adPlayImage.addEventListener("click", this._ad.bind(this));
         this.adPlayImage.style.opacity = 1;
-        this.adMobileCover.style.opacity = 1;
+        this.adWrapper.style.display = "block";
     }
 };
   
@@ -325,7 +326,11 @@ gdApi.Ad.prototype._onAdEvent = function(adEvent) {
                 clearInterval(this.intervalTimer);
             }
             this.adsManager.destroy();
-            this.mainContainer.style.display = "none";
+
+            this.adPlayImage.removeEventListener("click", this._ad);
+            this.adPlayImage.style.opacity = 0;
+            this.adWrapper.style.display = "none";
+            this.adMainContainer.style.display = "none";
     
             if (typeof this.resumeGame === "function")  this.resumeGame();
             if (typeof this.callback === "function")    this.callback();
@@ -335,14 +340,19 @@ gdApi.Ad.prototype._onAdEvent = function(adEvent) {
 };
 
 gdApi.Ad.prototype._forceOpenCover = function() {
-    this.adMobileCover.style.opacity = 1;
+    this.adPlayImage.addEventListener("click", this._ad.bind(this));
+    this.adPlayImage.style.opacity = 1;
+    this.adWrapper.style.display = "block";
 }
 gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
     console.warn(adErrorEvent);
     if (this.adsManager !== undefined)
         this.adsManager.destroy();
 
-    this.mainContainer.style.display = "none";
+    this.adPlayImage.removeEventListener("click", this._ad);
+    this.adPlayImage.style.opacity = 0;
+    this.adWrapper.style.display = "none";
+    this.adMainContainer.style.display = "none";
 
     if (typeof this.resumeGame === "function")  this.resumeGame();
     if (typeof this.failback === "function")    this.failback();
@@ -353,7 +363,29 @@ gdApi.Ad.prototype._onContentPauseRequested = function() {};
 gdApi.Ad.prototype._onContentResumeRequested = function() {};
 
 gdApi.Ad.prototype._styleText = [
-    "body #mainContainer {",
+    "body .adMainContainer {",
+      "position: absolute;",
+      "top: 0px;",
+      "left: 0px;",
+      "width: 100%;",
+      "height: 100%;",
+      "background-color: black;",
+      "z-index: 9998;",
+      "display: none;",
+    "}",
+    "body .adMainContainer .adVideo {",
+      "position: absolute;",
+      "top: 0px;",
+      "left: 0px;",
+      "background-color: black",
+    "}",
+    "body #adMainContainer .adContainer {",
+      "position: absolute;",
+      "top: 0px;",
+      "left: 0px;",
+    "}",
+
+    "body #adWrapper {",
       "position: absolute;",
       "top: 0px;",
       "left: 0px;",
@@ -362,18 +394,7 @@ gdApi.Ad.prototype._styleText = [
       "background-color: black;",
       "z-index: 9999;",
     "}",
-    "body #mainContainer #adVideo {",
-      "position: absolute;",
-      "top: 0px;",
-      "left: 0px;",
-      "background-color: black",
-    "}",
-    "body #mainContainer #adContainer {",
-      "position: absolute;",
-      "top: 0px;",
-      "left: 0px;",
-    "}",
-    "body #mainContainer #adBackground {",
+    "body #adWrapper #adBackground {",
       "position: absolute;",
       "top: 0px;",
       "left: 0px;",
@@ -384,7 +405,7 @@ gdApi.Ad.prototype._styleText = [
       "background-size: cover;",
       "background-position: center;",
     "}",
-    "body #mainContainer #adMobileCover {",  
+    "body #adWrapper #adMobileCover {",  
       "width: 100%;",
       "position: relative;",
       "z-index: 2;",
@@ -397,7 +418,7 @@ gdApi.Ad.prototype._styleText = [
       "-moz-transform: translateY(-50%);",
       "-webkit-transform: translateY(-50%);",
       "transition: opacity 1s;",
-      "opacity: 0;",
+    //   "opacity: 0;",
     "}",
     "#adMobileCover #adGameImage {",
       "position: relative;",
