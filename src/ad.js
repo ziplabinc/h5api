@@ -77,7 +77,7 @@ gdApi.Ad.prototype._initAdsense = function () {
     if(document.querySelector("body #adWrapper") !== null) {
         this.adWrapper  = document.querySelector("body #adWrapper");
         this.adPlayImage  = document.querySelector("body #adWrapper #adPlayImage");
-    }else {
+    }else if(gdApi.isMobile) { //모바일일 경우에만 Wrapper 생성
         this.adWrapper = document.createElement('div');
         this.adWrapper.id = "adWrapper";
         document.body.appendChild(this.adWrapper);
@@ -246,7 +246,7 @@ gdApi.Ad.prototype.run = function (opt) {
 };
   
 gdApi.Ad.prototype._ad = function () {
-    if (WG.isMobile) {
+    if (gdApi.isMobile) {
       this.adWrapper.style.display = "none";
       this.adMainContainer.style.backgroundColor = "black";
     }
@@ -322,14 +322,15 @@ gdApi.Ad.prototype._onAdEvent = function(adEvent) {
         case google.ima.AdEvent.Type.ALL_ADS_COMPLETED:
         case google.ima.AdEvent.Type.SKIPPED:
         case google.ima.AdEvent.Type.USER_CLOSE:
-            if (ad.isLinear()) {
-                clearInterval(this.intervalTimer);
-            }
+            if (ad.isLinear())  clearInterval(this.intervalTimer);
+            
             this.adsManager.destroy();
 
-            this.adPlayImage.removeEventListener("click", this._ad);
-            this.adPlayImage.style.opacity = 0;
-            this.adWrapper.style.display = "none";
+            if (gdApi.isMobile) {
+                this.adPlayImage.removeEventListener("click", this._ad);
+                this.adPlayImage.style.opacity = 0;
+                this.adWrapper.style.display = "none";
+            }
             this.adMainContainer.style.display = "none";
     
             if (typeof this.resumeGame === "function")  this.resumeGame();
@@ -346,12 +347,13 @@ gdApi.Ad.prototype._forceOpenCover = function() {
 }
 gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
     console.warn(adErrorEvent);
-    if (this.adsManager !== undefined)
-        this.adsManager.destroy();
+    if (this.adsManager !== undefined)  this.adsManager.destroy();
 
-    this.adPlayImage.removeEventListener("click", this._ad);
-    this.adPlayImage.style.opacity = 0;
-    this.adWrapper.style.display = "none";
+    if (gdApi.isMobile) {
+        this.adPlayImage.removeEventListener("click", this._ad);
+        this.adPlayImage.style.opacity = 0;
+        this.adWrapper.style.display = "none";
+    }
     this.adMainContainer.style.display = "none";
 
     if (typeof this.resumeGame === "function")  this.resumeGame();
