@@ -7,3 +7,14 @@ gdApi.isMobile = function () {
     })(navigator.userAgent || navigator.vendor || window.opera);
     return check;
 }();
+
+gdApi.getAdcode = function(codeCallback, codeUrl) {
+  if(codeCallback === undefined)  console.error("[gdApi] getCode param(codeCallback) is undefined");
+  else                            gdApi.Ad.codeCallback = codeCallback;
+  if(codeUrl === undefined) {
+      codeUrl = '//api.5gamedom.com/adcode.php?callback=gdApi.Ad.codeCallback';
+  }
+  var script = document.createElement('script');
+  script.src = codeUrl;
+  document.getElementsByTagName('head')[0].appendChild(script);
+}
