@@ -10,11 +10,19 @@ gdApi.isMobile = function () {
 
 gdApi.getAdcode = function(codeCallback, codeUrl) {
   if(codeCallback === undefined)  console.error("[gdApi] getCode param(codeCallback) is undefined");
-  else                            gdApi.Ad.codeCallback = codeCallback;
+  else {
+    gdApi.adcodeCallback = function(callback, json) {
+      gdApi.adcode = json;
+      callback(json);
+    }.bind(this, codeCallback);
+  }
   if(codeUrl === undefined) {
-      codeUrl = '//api.5gamedom.com/adcode.php?callback=gdApi.Ad.codeCallback';
+      codeUrl = '//api.5gamedom.com/adcode.php?callback=gdApi.adcodeCallback';
   }
   var script = document.createElement('script');
   script.src = codeUrl;
   document.getElementsByTagName('head')[0].appendChild(script);
 }
+
+gdApi.channelName = document.domain.split(".")[0];
+gdApi.channelName = (gdApi.channelName == "dev") ? "app" : gdApi.channelName;

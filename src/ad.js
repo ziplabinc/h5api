@@ -1,9 +1,9 @@
 gdApi.Ad = function (adUrl, opt) {
     if(document.body === null || document.body === undefined) {
-        console.error("new gdApi.Ad must be call after window.onload");
+        console.error("[gdApi.Ad] new gdApi.Ad must be call after window.onload");
         return;
     }
-    if (adUrl === undefined)  console.error("adUrl is not defined. Abort!");
+    if (adUrl === undefined)  console.error("[gdApi.Ad] adUrl is not defined. Abort!");
     else                      this.adUrl = adUrl;
   
     if (opt === undefined)    opt = {};
@@ -18,6 +18,7 @@ gdApi.Ad = function (adUrl, opt) {
     // 카울리 및 타 광고플랫폼 대응
     this.otherAd = opt.otherAd;
   
+    // 이거 한번만 실행되도록 옮기고 커밋할것!!!!
     var styleDOM = document.createElement("style");
     styleDOM.innerText = this._styleText.join(" ");
     document.body.appendChild(styleDOM);
@@ -143,21 +144,20 @@ gdApi.Ad.prototype._initAdsense = function () {
 
 gdApi.Ad.prototype.run = function (opt) {
     if (opt === undefined)                      opt = {};
-    if (typeof opt.success === "function")      this.callback = opt.success;
-    else                                        this.callback = null;
-    if (typeof opt.fail === "function")         this.failback = opt.fail;
-    else                                        this.failback = null;
-    if (typeof opt.pauseGame === "function")    this.pauseGame = opt.pauseGame;
-    else                                        this.pauseGame = null;
-    if (typeof opt.resumeGame === "function")   this.resumeGame = opt.resumeGame;
-    else                                        this.resumeGame = null;
+    if(this.isFullslot !== true) {
+        if (typeof opt.success === "function")      this.callback = opt.success;
+        else                                        this.callback = null;
+        if (typeof opt.fail === "function")         this.failback = opt.fail;
+        else                                        this.failback = null;
+        if (typeof opt.pauseGame === "function")    this.pauseGame = opt.pauseGame;
+        else                                        this.pauseGame = null;
+        if (typeof opt.resumeGame === "function")   this.resumeGame = opt.resumeGame;
+        else                                        this.resumeGame = null;
+
+        if(Date.now() - this.lastAdTime <= this.adAgainTime)                      return;
+        else if (this.adPlayLimit != -1 && this.adPlayCount >= this.adPlayLimit)  return;
+    }
     
-    if(Date.now() - this.lastAdTime <= this.adAgainTime)                      return;
-    else if (this.adPlayLimit != -1 && this.adPlayCount >= this.adPlayLimit)  return;
-    
-  
-    
-    // 카울리 및 타 광고플랫폼 대응
     if(this.otherAd == undefined) {
         if(window.google !== undefined && window.google.ima !== undefined) {
             // 인터벌 유무 체크
@@ -194,6 +194,8 @@ gdApi.Ad.prototype.run = function (opt) {
                 this.run(opt);
             }.bind(this), 200);
         }
+
+    // 카울리 및 타 광고플랫폼 대응
     }else if(this.otherAd == "cauly") {
         if(window.CaulyAds !== undefined) {
             // 카울리 창 올라와 있을 때에는 리턴
@@ -225,11 +227,11 @@ gdApi.Ad.prototype.run = function (opt) {
                 app_code: this.adUrl,
                 placement: 1,
                 displayid: "caulyDisplay-"+this.adUrl,
-                passback: function (e) { console.log("passback", this.adUrl);
+                passback: function (e) { console.log("[gdApi.Ad] passback", this.adUrl);
                     if (typeof this.failback === "function")    this.failback();
                 }.bind(this),
         
-                success: function (e) { console.log("success", this.adUrl);
+                success: function (e) { console.log("[gdApi.Ad] success", this.adUrl);
                     if (typeof this.callback === "function")    this.callback();
                 }.bind(this)
             });
@@ -256,13 +258,16 @@ gdApi.Ad.prototype._ad = function () {
       this.adPlayCount++;
     } catch (adError) {
       debugger;
-      console.error(adError);
+      console.error("[gdApi.Ad] ErrorCode "+adErrorEvent.h.h+" : "+adErrorEvent.h.l);
+
+      if (typeof this.resumeGame === "function")  this.resumeGame();
+      if (typeof this.failback === "function")    this.failback();
       // 광고 실패 혹은 끝 픽시 다시 켜주기
     }
   };
   
 gdApi.Ad.prototype._onAdsManagerLoaded = function(adsManagerLoadedEvent) {
-    console.log("_onAdsManagerLoaded")
+    console.log("[gdApi.Ad] _onAdsManagerLoaded start")
   
     // Get the ads manager.
     var adsRenderingSettings = new google.ima.AdsRenderingSettings();
@@ -346,7 +351,8 @@ gdApi.Ad.prototype._forceOpenCover = function() {
     this.adWrapper.style.display = "block";
 }
 gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
-    console.warn(adErrorEvent);
+    console.warn("[gdApi.Ad] ErrorCode "+adErrorEvent.h.h+" : "+adErrorEvent.h.l);
+    
     if (this.adsManager !== undefined)  this.adsManager.destroy();
 
     if (gdApi.isMobile) {
@@ -356,8 +362,14 @@ gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
     }
     this.adMainContainer.style.display = "none";
 
-    if (typeof this.resumeGame === "function")  this.resumeGame();
-    if (typeof this.failback === "function")    this.failback();
+    if(this.isFullslot !== true) {
+        this.adUrl = gdApi.adcode.ad.fullslot[gdApi.channelName];
+        this.isFullslot = true;
+        this.run();
+    }else {
+        if (typeof this.resumeGame === "function")  this.resumeGame();
+        if (typeof this.failback === "function")    this.failback();
+    }
 };
   
 gdApi.Ad.prototype._onContentPauseRequested = function() {};
@@ -395,6 +407,7 @@ gdApi.Ad.prototype._styleText = [
       "height: 100%;",
       "background-color: black;",
       "z-index: 9999;",
+      "display: none;",
     "}",
     "body #adWrapper #adBackground {",
       "position: absolute;",
