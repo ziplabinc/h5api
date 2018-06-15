@@ -267,9 +267,8 @@ gdApi.Ad.prototype._ad = function () {
     } catch (adError) {
       debugger;
       console.error("[gdApi.Ad] ErrorCode "+adErrorEvent.h.h+" : "+adErrorEvent.h.l);
-
-      if (typeof this.resumeGame === "function")  this.resumeGame();
-      if (typeof this.failback === "function")    this.failback();
+      
+      this._resumeAfterAd();
       // 광고 실패 혹은 끝 픽시 다시 켜주기
     }
   };
@@ -345,10 +344,8 @@ gdApi.Ad.prototype._onAdEvent = function(adEvent) {
                 this.adWrapper.style.display = "none";
             }
             this.adMainContainer.style.display = "none";
-    
-            if (typeof this.resumeGame === "function")  this.resumeGame();
-            if (typeof this.callback === "function")    this.callback();
 
+            this._resumeAfterAd();
             break;
     }
 };
@@ -358,6 +355,19 @@ gdApi.Ad.prototype._forceOpenCover = function() {
     this.adPlayImage.style.opacity = 1;
     this.adWrapper.style.display = "block";
 }
+gdApi.Ad.prototype._resumeAfterAd = function() {
+
+    if (typeof this.resumeGame === "function")  this.resumeGame();
+    if (typeof this.failback === "function")    this.failback();
+
+    // 풀슬롯 재생이었을 경우가 있으므로, false로 초기화
+    if(this.isFullslot === true) {
+        this.isFullslot = false;
+        this.adUrl = this._originAdUrl;
+        delete this._originAdUrl;
+    }
+}
+
 gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
     console.warn("[gdApi.Ad] ErrorCode "+adErrorEvent.h.h+" : "+adErrorEvent.h.l);
     
@@ -371,12 +381,12 @@ gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
     this.adMainContainer.style.display = "none";
 
     if(this.isFullslot !== true) {
+        this._originAdUrl = this.adUrl;
         this.adUrl = gdApi.adcode.ad.fullslot[gdApi.channelName];
         this.isFullslot = true;
         this.run();
     }else {
-        if (typeof this.resumeGame === "function")  this.resumeGame();
-        if (typeof this.failback === "function")    this.failback();
+        this._resumeAfterAd();
     }
 };
   
