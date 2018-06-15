@@ -8,6 +8,8 @@ gdApi.isMobile = function () {
     return check;
 }();
 
+gdApi.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
 gdApi.getAdcode = function(codeCallback, codeUrl) {
   if(codeCallback === undefined)  console.error("[gdApi] getCode param(codeCallback) is undefined");
   else {
@@ -25,4 +27,4 @@ gdApi.getAdcode = function(codeCallback, codeUrl) {
 }
 
 gdApi.channelName = document.domain.split(".")[0];
-gdApi.channelName = (gdApi.channelName == "dev") ? "app" : gdApi.channelName;
+gdApi.channelName = (gdApi.channelName == "dev" || gdApi.channelName == "platform") ? "app" : gdApi.channelName;

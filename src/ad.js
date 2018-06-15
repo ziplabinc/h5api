@@ -119,6 +119,10 @@ gdApi.Ad.prototype._initAdsense = function () {
     this.adVideo.style.width = window.innerWidth+"px";
     this.adVideo.style.height = window.innerHeight+"px";
     this.adVideo.classList.add("adVideo");
+    if(gdApi.isIOS) {
+        // see https://developers.google.com/interactive-media-ads/docs/sdks/html5/skippable-ads
+        this.adVideo.setAttribute("playsinline","");
+    }
     this.adMainContainer.appendChild(this.adVideo);
 
     this.adContainer = document.createElement('div');
@@ -132,6 +136,10 @@ gdApi.Ad.prototype._initAdsense = function () {
     this.adDisplayContainer = new google.ima.AdDisplayContainer(this.adContainer, this.adVideo);   
 
     this.adsLoader = new google.ima.AdsLoader(this.adDisplayContainer);
+    if(gdApi.isIOS) {
+        // see https://developers.google.com/interactive-media-ads/docs/sdks/html5/skippable-ads
+        this.adsLoader.getSettings().setDisableCustomPlaybackForIOS10Plus(true);
+    }
     this.adsLoader.addEventListener(
         google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
         this._onAdsManagerLoaded.bind(this), false
