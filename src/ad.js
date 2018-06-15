@@ -151,8 +151,8 @@ gdApi.Ad.prototype._initAdsense = function () {
 };
 
 gdApi.Ad.prototype.run = function (opt) {
-    if (opt === undefined)                      opt = {};
-    if(this.isFullslot !== true) {
+    if (opt === undefined)                          opt = {};
+    if(opt.retry !== true) {
         if (typeof opt.success === "function")      this.callback = opt.success;
         else                                        this.callback = null;
         if (typeof opt.fail === "function")         this.failback = opt.fail;
@@ -199,7 +199,7 @@ gdApi.Ad.prototype.run = function (opt) {
         // 아직 JS 로드 안되어있으면 조금 이후에 재실행
         }else if(this._resendInterval === undefined){
             this._resendInterval = setInterval(function() {
-                this.run(opt);
+                this.run({ retry: true });
             }.bind(this), 200);
         }
 
@@ -249,7 +249,7 @@ gdApi.Ad.prototype.run = function (opt) {
         // 아직 JS 로드 안되어있으면 조금 이후에 재실행
         }else if(this._resendInterval === undefined){
             this._resendInterval = setInterval(function() {
-                this.run(opt);
+                this.run({ retry: true });
             }.bind(this), 200);
         }
     }
@@ -384,7 +384,7 @@ gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
         this._originAdUrl = this.adUrl;
         this.adUrl = gdApi.adcode.ad.fullslot[gdApi.channelName];
         this.isFullslot = true;
-        this.run();
+        this.run({ retry: true });
     }else {
         this._resumeAfterAd();
     }
