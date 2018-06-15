@@ -164,6 +164,8 @@ gdApi.Ad.prototype.run = function (opt) {
 
         if(Date.now() - this.lastAdTime <= this.adAgainTime)                      return;
         else if (this.adPlayLimit != -1 && this.adPlayCount >= this.adPlayLimit)  return;
+
+        if (typeof this.pauseGame === "function")  this.pauseGame();
     }
     
     if(this.otherAd == undefined) {
@@ -177,8 +179,6 @@ gdApi.Ad.prototype.run = function (opt) {
             this.lastAdTime = Date.now();
             this.adMainContainer.style.display = "block";
             
-            if (typeof this.pauseGame === "function")  this.pauseGame();
-
             // 아래는 초기화 부분이 아닌 광고 호출 부분
             // Must be done as the result of a user action on mobile
             this.adDisplayContainer.initialize();
