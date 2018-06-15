@@ -12,9 +12,9 @@ Installation
 -------------
 - 게임 내 메인 html file의 head Tag에서 gdapi 모듈 파일을 로드합니다.
 - 모듈 Link : https://api.5gamedom.com/gdapi/build/gdapi-latest.min.js
-```
-  <script type="text/javascript" src="https://api.5gamedom.com/gdapi/build/gdapi-latest.min.js"></script>
-```
+    ```
+    <script type="text/javascript" src="https://api.5gamedom.com/gdapi/build/gdapi-latest.min.js"></script>
+    ```
 ***
 
 **광고 API**
@@ -26,14 +26,26 @@ Description
 - 광고의 종류는 다음과 같습니다.
     * 일반형 : 사용자가 광고 시청 시 획득 가능한 보상이 존재하지 않는 광고 (ex. 1분마다 한번씩 광고 시청)
     * 보상형 : 사용자가 광고 시청 시 획득 가능한 보상이 존재하는 경우 (ex. 광고 시청시 코인 5개 지급)
-- 광고 설정 작업은 크게 생성 및 실행으로 이루어집니다.
+    * 풀슬롯 : 광고 수급 또는 플랫폼 이슈로 인해, 일반형 또는 보상형 광고 재생이 불가능할 때 사용.
+- 광고 설정 작업은 크게 *광고코드 호출, 생성 실행* 으로 이루어집니다.
 
-Create
+Load Adcode
 -------------
-- 게임 내에서 필요한 광고를 생성합니다.
-- 광고 생성을 수행하기 위해서는 우선 광고코드를 로드해야 합니다.
-    * 광고코드 Link : https://api.5gamedom.com/adcode.php
-    * 광고코드 json file 구조
+- window.onload 이후(document.body가 존재할 때) 광고 생성 전, 사용할 광고 코드를 호출합니다.
+- gdApi.getAdcode( codeCallback [, codeUrl ] )
+
+    Name            | Type      | Default                               | Description
+    -----           | -----     | -----                                 | -----
+    codeCallback    | Function  | -                                     | 광고코드 호출 후 실행되는 콜백 함수
+    codeUrl         | String    | https://api.5gamedom.com/adcode.php   | 호출할 광고 코드
+    ```
+    window.onload = function() {
+        gdApi.getAdcode(function(json) {
+            // 광고 생성 작업을 수행합니다.
+        });
+    }
+    ```
+* 광고코드 json file 구조
     ```
     {
         ad: {
@@ -44,18 +56,25 @@ Create
             reward: {
                 app: "...[gn]...",
                 cultureland: "...[gn]..."
-            }
+            },
+            fullSlot: {
+                app: "...[gn]...",
+                cultureland: "...[gn]..."
+            },
         },
         adTime: 60000
     }
     ```
-    * 광고코드 사용 예시
+* 광고코드 사용 예시
     ```
     data.ad.normal.app; // 일반형 광고, 채널사코드: app
     data.ad.reward.app; // 보상형 광고, 채널사코드: app
     data.ad.normal.app.replace("[gn]", "24"); // 일반형 광고, 채널사코드: app, 게임no: 24
     ```
-- window.onload 이후(document.body가 존재할 때) 로드한 광고코드를 사용하여 광고를 생성합니다.
+
+Create
+-------------
+- 로드한 광고코드를 사용하여 게임 내에서 필요한 광고를 생성합니다.
 - new gdApi.Ad( url [, opt ] )
 
     Name        | Type      | Default       | Description
@@ -68,26 +87,19 @@ Create
     opt.time    | Number    | 1             | 광고 호출간 coolTime (ms)
     opt.otherAd | String    | null          | Google 광고 이외의 기타 광고 설정시 사용되는 설정값
 
-```
-window.onload = function() {
-    // jsonp 형식으로 adcode json file을 로드합니다
-    var script = document.createElement('script');
-    script.src = '//api.5gamedom.com/adcode.php?callback=myCallback';
-    document.getElementsByTagName('head')[0].appendChild(script);
-    
-    function myCallback(data){
+    ```
+    gdApi.getAdcode(function(json) {
         // 일반형 광고
         window.normalAd = new gdApi.Ad(
-            data.ad.normal.app.replace("[gn]", "24"), // 일반형 광고, 채널사코드: app, 게임no: 24
+            json.ad.normal.app.replace("[gn]", "24"), // 일반형 광고, 채널사코드: app, 게임no: 24
             {
                 title: 'Block Breaker',
                 image: '../img/icon.jpg', // 일반적으로 5gamedom에 노출되는 아이콘과 동일한 이미지 사용
-                time : data.adTime,
+                time : json.adTime,
             }
         );
     });
-}
-```
+    ```
 
 Run
 -------------
@@ -102,32 +114,32 @@ Run
     opt.success     | Function  | null      | 광고 실행 성공 시 실행되는 콜백
     opt.fail        | Function  | null      | 광고 실행 실패 시 실행되는 콜백
 
-```
-window.normalAd.run({
-    pauseGame: function() {
-        // 게임 정지 및 게임 사운드 음소거 로직이 삽입되는 함수입니다.
-        // 아래 게임 정지 및 음소거 코드는 Sample 코드입니다.
-        GAME.pause = true;
-        GAME.Sound.muteToggle(true);
-        ~~~
-    },
-    resumeGame: function() {
-        // 게임 재개 및 게임 사운드 재생 로직이 삽입되는 함수입니다.
-        // 아래 게임 정지 및 음소거 코드는 Sample 코드입니다.
-        GAME.pause = false;
-        GAME.Sound.muteToggle(false); // 기존 음소거 기능과 중첩되지 않도록 관리해야 합니다.
-        ~~~
-    },
-    success: function() {
-        // 광고 실행 성공 시 실행되는 콜백입니다.
-        ~~~
-    },
-    fail: function() {
-        // 광고 실행 실패 시 실행되는 콜백입니다.
-        ~~~
-    }
-});
-```
+    ```
+    window.normalAd.run({
+        pauseGame: function() {
+            // 게임 정지 및 게임 사운드 음소거 로직이 삽입되는 함수입니다.
+            // 아래 게임 정지 및 음소거 코드는 Sample 코드입니다.
+            GAME.pause = true;
+            GAME.Sound.muteToggle(true);
+            ~~~
+        },
+        resumeGame: function() {
+            // 게임 재개 및 게임 사운드 재생 로직이 삽입되는 함수입니다.
+            // 아래 게임 정지 및 음소거 코드는 Sample 코드입니다.
+            GAME.pause = false;
+            GAME.Sound.muteToggle(false); // 기존 음소거 기능과 중첩되지 않도록 관리해야 합니다.
+            ~~~
+        },
+        success: function() {
+            // 광고 실행 성공 시 실행되는 콜백입니다.
+            ~~~
+        },
+        fail: function() {
+            // 광고 실행 실패 시 실행되는 콜백입니다.
+            ~~~
+        }
+    });
+    ```
 ***
 
 **포인트 API**
@@ -148,11 +160,11 @@ Init
 - 포인트 요청 전, 게임 내에서 포인트 모듈을 초기화합니다.
 - window.onload 이후(document.body가 존재할 때) 포인트 모듈을 초기화합니다.
 - gdApi.Point.init()
-```
-window.onload = function() {
-    gdApi.init();
-}
-```
+    ```
+    window.onload = function() {
+        gdApi.Point.init();
+    }
+    ```
 
 Call
 -------------
@@ -167,16 +179,16 @@ Call
     opt.pauseGame   | Function  | null      | 포인트 적립 시 팝업 창이 생성될 때 동작해야 하는 게임정지 함수
     opt.resumeGame  | Function  | null      | 포인트 적립 팝업 창을 닫을 때 동작해야 하는 게임재개 함수
 
-```
-gdApi.Point.call({
-    env: "block",
-    pauseGame: function(){
-        // 아래 게임 정지 코드는 Sample 코드입니다.
-        GAME.pause = true;
-    },
-    resumeGame: function(){
-        // 아래 게임 정지 코드는 Sample 코드입니다.
-        GAME.pause = false;
-    }
-});
-```
+    ```
+    gdApi.Point.call({
+        env: "block",
+        pauseGame: function(){
+            // 아래 게임 정지 코드는 Sample 코드입니다.
+            GAME.pause = true;
+        },
+        resumeGame: function(){
+            // 아래 게임 정지 코드는 Sample 코드입니다.
+            GAME.pause = false;
+        }
+    });
+    ```
