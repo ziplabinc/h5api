@@ -1,6 +1,6 @@
-gdApi.Ad = function (adUrl, opt) {
+    gdApi.Ad = function (adUrl, opt) {
     if(document.body === null || document.body === undefined) {
-        console.error("[gdApi.Ad] new gdApi.Ad must be call after window.onload");
+        console.error("[gdApi.Ad] new gdApi.Ad must be call after window.onload. Abort!");
         return;
     }
     if (adUrl === undefined)  console.error("[gdApi.Ad] adUrl is not defined. Abort!");
@@ -8,7 +8,6 @@ gdApi.Ad = function (adUrl, opt) {
   
     if (opt === undefined)    opt = {};
     if (opt.title)            this.title = opt.title;
-    else                      this.title = "GAME START";
     if (opt.image)            this.image = opt.image;
     if (opt.limit)            this.adPlayLimit = opt.limit;
     else                      this.adPlayLimit = -1; // 무한
@@ -16,13 +15,8 @@ gdApi.Ad = function (adUrl, opt) {
     else                      this.adAgainTime = 1; // 즉시
     
     // 카울리 및 타 광고플랫폼 대응
-    this.otherAd = opt.otherAd;
-  
-    // 이거 한번만 실행되도록 옮기고 커밋할것!!!!
-    var styleDOM = document.createElement("style");
-    styleDOM.innerText = this._styleText.join(" ");
-    document.body.appendChild(styleDOM);
-  
+    // this.otherAd = opt.otherAd;
+    
     this.adsManager;
     this.adsLoader;
     this.adDisplayContainer;
@@ -30,48 +24,8 @@ gdApi.Ad = function (adUrl, opt) {
   
     this.adPlayCount = 0;
     this.lastAdTime = this.adAgainTime;
-  
-    // 구글 IMA
-    if(this.otherAd === undefined) {
-        if(window.google === undefined || window.google.ima === undefined) {
-            // 스크립트 동적 로드
-            var script = document.createElement("script");
-            script.type = "text/javascript";
-            if (script.readyState){  //IE
-                script.onreadystatechange = function(){
-                    if (script.readyState == "loaded" || script.readyState == "complete"){
-                        script.onreadystatechange = null;
-                        this._initAdsense();
-                    }
-                }.bind(this);
-            } else {  //Others
-                script.onload = this._initAdsense.bind(this);
-            }
-            script.src = "//s0.2mdn.net/instream/html5/ima3.js";
-            document.getElementsByTagName("head")[0].appendChild(script);
-        }
-
-    // 카울리 및 타 광고플랫폼 대응
-    }else if(this.otherAd == "cauly") {
-        // 기존에 로드한 스크립트가 없을 경우 동작
-        if(window.CaulyAds === undefined) {
-            // 스크립트 동적 로드
-            var script = document.createElement("script");
-            script.type = "text/javascript";
-            if (script.readyState){  //IE
-                script.onreadystatechange = function(){
-                    if (script.readyState == "loaded" || script.readyState == "complete"){
-                        script.onreadystatechange = null;
-                        // this._caulyCallback.bind(this);
-                    }
-                }.bind(this);
-            } else {  //Others
-                // script.onload = this._caulyCallback.bind(this);
-            }
-            script.src = "https://image.cauly.co.kr/websdk/common/lasted/ads.min.js";
-            document.getElementsByTagName("head")[0].appendChild(script);
-        }
-    }
+    
+    this._initAdsense();
 };
 
 gdApi.Ad.prototype._initAdsense = function () {
@@ -167,92 +121,26 @@ gdApi.Ad.prototype.run = function (opt) {
 
         if (typeof this.pauseGame === "function")  this.pauseGame();
     }
+
+    this.lastAdTime = Date.now();
+    this.adMainContainer.style.display = "block";
     
-    if(this.otherAd == undefined) {
-        if(window.google !== undefined && window.google.ima !== undefined) {
-            // 인터벌 유무 체크
-            if(this._resendInterval !== undefined) {
-                clearInterval(this._resendInterval);
-                delete this._resendInterval;
-            }
+    // 아래는 초기화 부분이 아닌 광고 호출 부분
+    // Must be done as the result of a user action on mobile
+    this.adDisplayContainer.initialize();
 
-            this.lastAdTime = Date.now();
-            this.adMainContainer.style.display = "block";
-            
-            // 아래는 초기화 부분이 아닌 광고 호출 부분
-            // Must be done as the result of a user action on mobile
-            this.adDisplayContainer.initialize();
-        
-            var adsRequest = new google.ima.AdsRequest();
-            adsRequest.adTagUrl = this.adUrl;
-        
-            adsRequest.linearAdSlotWidth = window.innerWidth;
-            adsRequest.linearAdSlotHeight = window.innerHeight;
-        
-            adsRequest.nonLinearAdSlotWidth = window.innerWidth;
-            adsRequest.nonLinearAdSlotHeight = window.innerHeight;
-            adsRequest.setAdWillAutoPlay(true);
-            adsRequest.setAdWillPlayMuted(true);
-        
-            this.adsLoader.requestAds(adsRequest);
+    var adsRequest = new google.ima.AdsRequest();
+    adsRequest.adTagUrl = this.adUrl;
 
-        // 아직 JS 로드 안되어있으면 조금 이후에 재실행
-        }else if(this._resendInterval === undefined){
-            this._resendInterval = setInterval(function() {
-                this.run({ retry: true });
-            }.bind(this), 200);
-        }
+    adsRequest.linearAdSlotWidth = window.innerWidth;
+    adsRequest.linearAdSlotHeight = window.innerHeight;
 
-    // 카울리 및 타 광고플랫폼 대응
-    }else if(this.otherAd == "cauly") {
-        if(window.CaulyAds !== undefined) {
-            // 카울리 창 올라와 있을 때에는 리턴
-            if(document.querySelectorAll("body .caulyDisplay").length !== 0) {
-              var rtn = [].slice.call(document.querySelectorAll("body .caulyDisplay iframe")).some(function(e, i, a) {
-                return (window.getComputedStyle(e).display == "block")
-              });
-              if(rtn === true) return;
-            }
-            
-            // 인터벌 유무 체크
-            if(this._resendInterval !== undefined) {
-                clearInterval(this._resendInterval);
-                delete this._resendInterval;
-            }
+    adsRequest.nonLinearAdSlotWidth = window.innerWidth;
+    adsRequest.nonLinearAdSlotHeight = window.innerHeight;
+    adsRequest.setAdWillAutoPlay(true);
+    adsRequest.setAdWillPlayMuted(true);
 
-            this.lastAdTime = Date.now();
-    
-            // wrap DOM 체크 및 생성
-            if(document.querySelector("body #caulyDisplay-"+this.adUrl) !== null) {
-                document.body.removeChild(this.adContainer);
-            }
-            this.adContainer = document.createElement('div');
-            this.adContainer.id = "caulyDisplay-"+this.adUrl;
-            this.adContainer.classList.add("caulyDisplay");
-            document.getElementsByTagName('body')[0].appendChild(this.adContainer);
-            
-            this.cauly_ads = new CaulyAds({
-                app_code: this.adUrl,
-                placement: 1,
-                displayid: "caulyDisplay-"+this.adUrl,
-                passback: function (e) { console.log("[gdApi.Ad] passback", this.adUrl);
-                    if (typeof this.failback === "function")    this.failback();
-                }.bind(this),
-        
-                success: function (e) { console.log("[gdApi.Ad] success", this.adUrl);
-                    if (typeof this.callback === "function")    this.callback();
-                }.bind(this)
-            });
-            
-            this.cauly_ads.showPopup();
-    
-        // 아직 JS 로드 안되어있으면 조금 이후에 재실행
-        }else if(this._resendInterval === undefined){
-            this._resendInterval = setInterval(function() {
-                this.run({ retry: true });
-            }.bind(this), 200);
-        }
-    }
+    this.adsLoader.requestAds(adsRequest);
 };
   
 gdApi.Ad.prototype._ad = function () {
@@ -382,7 +270,7 @@ gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
 
     if(this.isFullslot !== true) {
         this._originAdUrl = this.adUrl;
-        this.adUrl = gdApi.adcode.ad.fullslot[gdApi.channelName];
+        this.adUrl = gdApi.adcode.ad.fullslot[gdApi.data.cn];
         this.isFullslot = true;
         this.run({ retry: true });
     }else {
@@ -393,110 +281,3 @@ gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
 gdApi.Ad.prototype._onContentPauseRequested = function() {};
 
 gdApi.Ad.prototype._onContentResumeRequested = function() {};
-
-gdApi.Ad.prototype._styleText = [
-    "body .adMainContainer {",
-      "position: absolute;",
-      "top: 0px;",
-      "left: 0px;",
-      "width: 100%;",
-      "height: 100%;",
-      "background-color: black;",
-      "z-index: 9998;",
-      "display: none;",
-    "}",
-    "body .adMainContainer .adVideo {",
-      "position: absolute;",
-      "top: 0px;",
-      "left: 0px;",
-      "background-color: black",
-    "}",
-    "body #adMainContainer .adContainer {",
-      "position: absolute;",
-      "top: 0px;",
-      "left: 0px;",
-    "}",
-
-    "body #adWrapper {",
-      "position: absolute;",
-      "top: 0px;",
-      "left: 0px;",
-      "width: 100%;",
-      "height: 100%;",
-      "background-color: black;",
-      "z-index: 9999;",
-      "display: none;",
-    "}",
-    "body #adWrapper #adBackground {",
-      "position: absolute;",
-      "top: 0px;",
-      "left: 0px;",
-      "width: 100%;",
-      "height: 100%;",
-      "opacity: .75;",
-      "background-image: url(data:image/jpeg;base64,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);",
-      "background-size: cover;",
-      "background-position: center;",
-    "}",
-    "body #adWrapper #adMobileCover {",  
-      "width: 100%;",
-      "position: relative;",
-      "z-index: 2;",
-      "padding: 30px 0;",
-      "background: rgba(0,0,0,0.5);",
-      "top: 50%;",
-      "transform: translateY(-50%);",
-      "-o-transform: translateY(-50%);",
-      "-ms-transform: translateY(-50%);",
-      "-moz-transform: translateY(-50%);",
-      "-webkit-transform: translateY(-50%);",
-      "transition: opacity 1s;",
-    //   "opacity: 0;",
-    "}",
-    "#adMobileCover #adGameImage {",
-      "position: relative;",
-      "width: 192px;",
-      "height: 192px;",
-      "left: 50%;",
-      "margin-bottom: 30px;",
-      "transform: translateX(-50%);",
-      "-o-transform: translateX(-50%);", // Opera
-      "-ms-transform: translateX(-50%);", // IE 9
-      "-moz-transform: translateX(-50%);", // Firefox
-      "-webkit-transform: translateX(-50%);", // Safari and Chrome
-    "}",
-    "#adMobileCover #adPlayImage {",
-      "position: relative;",
-      "width: 65px;",
-      "height: 65px;",
-      "left: 50%;",
-      "opacity: 0;",
-      "transform: translateX(-50%);",
-      "-o-transform: translateX(-50%);", // Opera
-      "-ms-transform: translateX(-50%);", // IE 9
-      "-moz-transform: translateX(-50%);", // Firefox
-      "-webkit-transform: translateX(-50%);", // Safari and Chrome
-      "border-radius: 50%;",
-      "-webkit-box-shadow: 0 1px 0 0 rgba(0,0,0,0.75);",
-      "box-shadow: 0 1px 0 0 rgba(0,0,0,0.75);",
-      "background: rgba(90,213,186,1);",
-      "background: -moz-linear-gradient(-45deg, rgba(90,213,186,1) 0%, rgba(91,203,249,1) 100%);", /* Old Browsers */
-      "background: -webkit-gradient(left top, right bottom, color-stop(0%, rgba(90,213,186,1)), color-stop(100%, rgba(91,203,249,1)));", /* FF3.6+ */
-      "background: -webkit-linear-gradient(-45deg, rgba(90,213,186,1) 0%, rgba(91,203,249,1) 100%);", /* Chrome, Safari4+ */
-      "background: -o-linear-gradient(-45deg, rgba(90,213,186,1) 0%, rgba(91,203,249,1) 100%);", /* Chrome10+,Safari5.1+ */
-      "background: -ms-linear-gradient(-45deg, rgba(90,213,186,1) 0%, rgba(91,203,249,1) 100%);", /* Opera 11.10+ */
-      "background: linear-gradient(135deg, rgba(90,213,186,1) 0%, rgba(91,203,249,1) 100%);", /* IE 10+ */
-      "filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#5ad5ba', endColorstr='#5bcbf9', GradientType=1 );", /* W3C */
-    "}",
-    "#adMobileCover #adPlayImage:after {",
-      "content: '';",
-      "position: absolute;",
-      "width: 0;",
-      "height: 0;",
-      "left: 26px;",
-      "top: 21px;",
-      "border: 13px solid transparent;",
-      "border-left: 20px solid #fff;",
-      "border-right: 0;",
-    "}"
-];
