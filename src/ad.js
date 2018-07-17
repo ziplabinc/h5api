@@ -1,4 +1,4 @@
-    gdApi.Ad = function (adUrl, opt) {
+gdApi.Ad = function (adUrl, opt) {
     if(document.body === null || document.body === undefined) {
         console.error("[gdApi.Ad] new gdApi.Ad must be call after window.onload. Abort!");
         return;
