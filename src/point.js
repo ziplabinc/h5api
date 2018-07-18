@@ -34,11 +34,12 @@ gdApi.Point = new function() {
 
         this.DOM.backScreen = document.createElement("div");
         this.DOM.backScreen.id = "gd-backScreen";
-        this.DOM.backScreen.addEventListener("click", function(e) {
-            if(e.target.id != "gd-backScreen") return;
-            e.target.style.display = "none";
-            if(typeof this.resumeGame == "function") this.resumeGame();
-        }.bind(this));
+        // this.DOM.backScreen.addEventListener("click", function(e) {
+        //     if(e.target.id != "gd-backScreen") return;
+        //     e.target.style.display = "none";
+        //     if(typeof this.resumeGame == "function") this.resumeGame();
+        //     if(typeof this.callback == "function") this.callback();
+        // }.bind(this));
         document.body.appendChild(this.DOM.backScreen);
 
         this.DOM.mainPopup = document.createElement("div");
@@ -77,7 +78,9 @@ gdApi.Point = new function() {
         submitBtn.innerText = "게임 계속하기";
         submitBtn.addEventListener("click", function(e) {
             this.DOM.backScreen.style.display = "none";
-            if(typeof this.resumeGame == "function") this.resumeGame();
+
+            if(typeof this.resumeGame == "function")    this.resumeGame();
+            if(typeof this.sucsback == "function")      this.sucsback();
         }.bind(this));
         this.DOM.mainPopup.appendChild(submitBtn);
 
@@ -93,7 +96,10 @@ gdApi.Point = new function() {
 
 
     this._openPopup = function(data) { // console.log(data);
-        if(data.status == "fail")   return;
+        if(data.status == "fail") {
+            if(typeof this.failback == "function") this.failback();
+            return;
+        }   
         else {
             if(typeof this.pauseGame == "function") this.pauseGame();
         }
@@ -136,6 +142,10 @@ gdApi.Point = new function() {
         else                                        this.pauseGame = null;
         if (typeof opt.resumeGame === "function")   this.resumeGame = opt.resumeGame;
         else                                        this.resumeGame = null;
+        if (typeof opt.success === "function")      this.sucsback = opt.success;
+        else                                        this.sucsback = null;
+        if (typeof opt.fail === "function")         this.failback = opt.fail;
+        else                                        this.failback = null;
 
         var xhr = new XMLHttpRequest();
         // xhr.responseType = "json"; // It is not working in IE...
@@ -147,6 +157,7 @@ gdApi.Point = new function() {
                     this._openPopup(JSON.parse(xhr.response));
                 }else { // ETC(404, 503 ..)
                     console.error("[gdApi.Point] Point xhrCall error: "+xhr.status+" "+xhr.statusText+" ("+xhr.responseURL+")");
+                    if(typeof this.failback == "function") this.failback();
                 }
             }
         }.bind(this);

@@ -116,8 +116,10 @@ gdApi.Ad.prototype.run = function (opt) {
         if (typeof opt.resumeGame === "function")   this.resumeGame = opt.resumeGame;
         else                                        this.resumeGame = null;
 
-        if(Date.now() - this.lastAdTime <= this.adAgainTime)                      return;
-        else if (this.adPlayLimit != -1 && this.adPlayCount >= this.adPlayLimit)  return;
+        // 아직 광고쿨타임이 덜 지났거나
+        // 플레이 한계수를 넘겼을 경우 false 리턴
+        if(Date.now() - this.lastAdTime <= this.adAgainTime)                      return false;
+        else if (this.adPlayLimit != -1 && this.adPlayCount >= this.adPlayLimit)  return false;
 
         if (typeof this.pauseGame === "function")  this.pauseGame();
     }
@@ -141,6 +143,8 @@ gdApi.Ad.prototype.run = function (opt) {
     adsRequest.setAdWillPlayMuted(true);
 
     this.adsLoader.requestAds(adsRequest);
+
+    return true;
 };
   
 gdApi.Ad.prototype._ad = function () {
@@ -153,11 +157,8 @@ gdApi.Ad.prototype._ad = function () {
       this.adsManager.start();
       this.adPlayCount++;
     } catch (adError) {
-      debugger;
-      console.error("[gdApi.Ad] ErrorCode "+adErrorEvent.h.h+" : "+adErrorEvent.h.l);
-      
-      this._resumeAfterAd();
-      // 광고 실패 혹은 끝 픽시 다시 켜주기
+      console.error("[gdApi.Ad] adsManager.start ErrorCode "+adErrorEvent.h.h+" : "+adErrorEvent.h.l);
+      this._resumeAfterAd(false);
     }
   };
   
@@ -207,9 +208,7 @@ gdApi.Ad.prototype._onAdEvent = function(adEvent) {
     var ad = adEvent.getAd();
     switch (adEvent.type) {
         case google.ima.AdEvent.Type.LOADED:
-            if (!ad.isLinear()) {
-            // 광고 실패 혹은 끝 픽시 다시 켜주기
-            }
+            if (!ad.isLinear()) {;} // 광고 실패 혹은 끝?
             break;
         case google.ima.AdEvent.Type.STARTED:
             if (ad.isLinear()) {
@@ -226,14 +225,7 @@ gdApi.Ad.prototype._onAdEvent = function(adEvent) {
             
             this.adsManager.destroy();
 
-            if (gdApi.isMobile) {
-                this.adPlayImage.removeEventListener("click", this._ad);
-                this.adPlayImage.style.opacity = 0;
-                this.adWrapper.style.display = "none";
-            }
-            this.adMainContainer.style.display = "none";
-
-            this._resumeAfterAd();
+            this._resumeAfterAd(true);
             break;
     }
 };
@@ -243,12 +235,21 @@ gdApi.Ad.prototype._forceOpenCover = function() {
     this.adPlayImage.style.opacity = 1;
     this.adWrapper.style.display = "block";
 }
-gdApi.Ad.prototype._resumeAfterAd = function() {
+gdApi.Ad.prototype._resumeAfterAd = function(isSuccess) {
 
-    if (typeof this.resumeGame === "function")  this.resumeGame();
-    if (typeof this.failback === "function")    this.failback();
+    if (typeof this.resumeGame === "function")              this.resumeGame();
+    if (typeof this.callback === "function" && isSuccess)   this.callback();
+    if (typeof this.failback === "function" && !isSuccess)  this.failback();
 
-    // 풀슬롯 재생이었을 경우가 있으므로, false로 초기화
+    // 광고 뷰 관련 초기화
+    if (gdApi.isMobile) {
+        this.adPlayImage.removeEventListener("click", this._ad);
+        this.adPlayImage.style.opacity = 0;
+        this.adWrapper.style.display = "none";
+    }
+    this.adMainContainer.style.display = "none";
+
+    // 풀슬롯 재생이었을 경우에는 관련 변수 초기화
     if(this.isFullslot === true) {
         this.isFullslot = false;
         this.adUrl = this._originAdUrl;
@@ -261,20 +262,15 @@ gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
     
     if (this.adsManager !== undefined)  this.adsManager.destroy();
 
-    if (gdApi.isMobile) {
-        this.adPlayImage.removeEventListener("click", this._ad);
-        this.adPlayImage.style.opacity = 0;
-        this.adWrapper.style.display = "none";
-    }
-    this.adMainContainer.style.display = "none";
-
+    // 풀슬롯이 아닌 경우, 재도전
+    // (1009 VAST 에러일 경우 풀슬롯으로는 정상 동작하는 경우가 존재하므로)
     if(this.isFullslot !== true) {
         this._originAdUrl = this.adUrl;
         this.adUrl = gdApi.adcode.ad.fullslot[gdApi.data.cn];
         this.isFullslot = true;
         this.run({ retry: true });
     }else {
-        this._resumeAfterAd();
+        this._resumeAfterAd(false);
     }
 };
   

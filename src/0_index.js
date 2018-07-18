@@ -90,7 +90,9 @@ window.gdApi = new function() {
     else                                        var udfArg = "opt.pauseGame";
     if (typeof opt.resumeGame === "function")   this.resumeGame = opt.resumeGame;
     else                                        var udfArg = "opt.resumeGame";
+    if (typeof opt.callback === "function")     this.callback = opt.callback;
     // if(opt.type === undefined)     var udfArg = "opt.type";
+
     if(udfArg) {
       console.error("[gdApi.run] "+udfArg+" was undefined. Abort!");
       return false;
@@ -135,21 +137,31 @@ window.gdApi = new function() {
     else                                        var runPauseGame = this.pauseGame;
     if (typeof opt.resumeGame === "function")   var runResumeGame = opt.resumeGame;
     else                                        var runResumeGame = this.resumeGame;
+    if (typeof opt.callback === "function")     var runCallback = opt.callback;
+    else                                        var runCallback = this.callback;
     
     if(this._isInit === "complete") {
       // 우선 normal, reward 구분 없이 로드
-      this.adList.normal.run({
+      var rtn = this.adList.normal.run({
         pauseGame: runPauseGame,
         resumeGame: runResumeGame,
+
         success: function () {
           this.Point.call({
             env: this.data.gd,
             pauseGame: runPauseGame,
-            resumeGame: runResumeGame
+            resumeGame: runResumeGame,
+            success: runCallback,
+            fail: runCallback,
           });
         }.bind(this),
-        fail: function () {}
-      })
+
+        fail: function() {
+          if(typeof runCallback == "function")  runCallback();
+        }.bind(this)
+      });
+
+      if(!rtn && typeof runCallback == "function")  runCallback();
   
     // 아직 _isInit 로드 안되어있으면 조금 이후에 재실행
     }else {
