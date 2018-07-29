@@ -108,7 +108,8 @@ window.gdApi = new function() {
         "//s0.2mdn.net/instream/html5/ima3.js"
       ];
       if(opt.isRank === true) loadArr.push("//api.5gamedom.com/rank.php?gd="+this.data.gd);
-      this._loadScript(loadArr, function() {
+
+      this._loadScript(loadArr, function(useReward) {
         this.adList.normal = new this.Ad(
           this.adcode.ad.normal[gdApi.data.cn].replace("[gn]", this.data.gn),
           {
@@ -117,12 +118,23 @@ window.gdApi = new function() {
             time : this.adcode.adTime,
           }
         );
+        
+        if(useReward === true) {
+          this.adList.reward = new this.Ad(
+            this.adcode.ad.reward[gdApi.data.cn].replace("[gn]", this.data.gn),
+            {
+              title: this.data.gt,
+              image: this.data.gi,
+              time : 1,
+            }
+          );
+        }
 
         // gdApi 관련 처리 끝낸 후 기존 window.onload 호출
         // if(typeof gdApi._prevOnload == "function")  gdApi._prevOnload();
 
         this._isInit = "complete";
-      }.bind(this));
+      }.bind(this, opt.useReward));
 
     }else {
       setTimeout(function() {
@@ -135,7 +147,9 @@ window.gdApi = new function() {
 
   this.run = function(opt) {
     // argument 검증
-    if(opt === undefined)                         opt = {};
+    if (opt === undefined)                      opt = {};
+    if (opt.type !== undefined)                 var runType = opt.type;
+    else                                        var runType = "normal";
     if (typeof opt.pauseGame === "function")    var runPauseGame = opt.pauseGame;
     else                                        var runPauseGame = this.pauseGame;
     if (typeof opt.resumeGame === "function")   var runResumeGame = opt.resumeGame;
@@ -144,24 +158,38 @@ window.gdApi = new function() {
     else                                        var runCallback = this.callback;
     
     if(this._isInit === "complete") {
-      // 우선 normal, reward 구분 없이 로드
-      var rtn = this.adList.normal.run({
-        pauseGame: runPauseGame,
-        resumeGame: runResumeGame,
-
-        success: function () {
+      if(runType == "normal") {
+        var runSuccess = function (gdApiCallback) {
           this.Point.call({
             env: this.data.gd,
             pauseGame: runPauseGame,
             resumeGame: runResumeGame,
-            success: runCallback,
-            fail: runCallback,
+            success: gdApiCallback,
+            fail: gdApiCallback,
           });
-        }.bind(this),
+        }.bind(this, runCallback);
 
-        fail: function() {
-          if(typeof runCallback == "function")  runCallback();
-        }.bind(this)
+        var runFail = function(gdApiCallback) {
+          if(typeof gdApiCallback == "function")  gdApiCallback();
+        }.bind(this, runCallback);
+
+      }else if(runType == "reward") {
+        var runSuccess = function (gdApiCallback, success) {
+          if(typeof success == "function")        success();
+          if(typeof gdApiCallback == "function")  gdApiCallback();
+        }.bind(this, runCallback, opt.success);
+
+        var runFail = function(gdApiCallback, fail) {
+          if(typeof fail == "function")           fail();
+          if(typeof gdApiCallback == "function")  gdApiCallback();
+        }.bind(this, runCallback, opt.fail);
+      }
+
+      var rtn = this.adList[runType].run({
+        pauseGame: runPauseGame,
+        resumeGame: runResumeGame,
+        success: runSuccess,
+        fail: runFail
       });
 
       if(!rtn && typeof runCallback == "function")  runCallback();
