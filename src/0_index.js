@@ -51,11 +51,11 @@ window.gdApi = new function() {
       }.bind(this, codeCallback);
     }
     if(codeUrl === undefined) {
-        codeUrl = '//api.5gamedom.com/adcode.php?callback=gdApi._adcodeCallback';
+      codeUrl = '//api.5gamedom.com/adcode.php?callback=gdApi._adcodeCallback';
     }
-    var script = document.createElement('script');
-    script.src = codeUrl;
-    document.getElementsByTagName('head')[0].appendChild(script);
+    var loadArr = ["//s0.2mdn.net/instream/html5/ima3.js", codeUrl];
+
+    this._loadScript(loadArr, function(){});
   }
 
   // gdApi.data 게임정보 초기화
@@ -85,7 +85,7 @@ window.gdApi = new function() {
   this.init = function(opt) {
 
     // argument 검증
-    if(opt === undefined)                         opt = {};
+    if(opt === undefined)                       opt = {};
     if (typeof opt.pauseGame === "function")    this.pauseGame = opt.pauseGame;
     else                                        var udfArg = "opt.pauseGame";
     if (typeof opt.resumeGame === "function")   this.resumeGame = opt.resumeGame;
@@ -102,15 +102,18 @@ window.gdApi = new function() {
       console.log("[gdapi] Initializing...");
       // gdApi 초기화
       this.Point.init();
-      this._loadScript([
+
+      var loadArr = [
         "//api.5gamedom.com/adcode.php?callback=gdApi._adcodeCallback",
         "//s0.2mdn.net/instream/html5/ima3.js"
-      ], function() {
+      ];
+      if(opt.isRank === true) loadArr.push("//api.5gamedom.com/rank.php?gd="+this.data.gd);
+      this._loadScript(loadArr, function() {
         this.adList.normal = new this.Ad(
-          this.adcode.ad.normal[gdApi.data.cn].replace("[gn]", gdApi.data.gn),
+          this.adcode.ad.normal[gdApi.data.cn].replace("[gn]", this.data.gn),
           {
-            title: gdApi.data.gt,
-            image: gdApi.data.gi,
+            title: this.data.gt,
+            image: this.data.gi,
             time : this.adcode.adTime,
           }
         );
@@ -172,4 +175,29 @@ window.gdApi = new function() {
       }.bind(this), 200);
     }
   }
+
+  this.cc = function (k) { // chocolateCake
+    var r = '';
+    var line = k.split(String.fromCharCode(0x3000));
+    for (var i = 0; i < line.length; i++) {
+      r += String.fromCharCode(
+        parseInt(
+          line[i].replace(/\t/gi, "1").replace(/ /gi, "0"),
+          2
+        )
+        .toString(10)
+      );
+    }
+    return r;
+  };
+  this.bc = function (t) {
+    var r = '';
+    for (var i = 0; i < t.length; i++) {
+      r += (t[i].charCodeAt()).toString(2)
+        .replace(/1/gi, "	").replace(/0/gi, " ");
+      r += String.fromCharCode(0x3000);
+    }
+    return r.slice(0,-1);
+  }
+
 }

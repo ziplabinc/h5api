@@ -3,6 +3,7 @@
 
 var buildPath = "./build/";
 var srcPath = "./src/";
+var libPath = "./lib/";
 var readmePath = "./README.md"
 
 module.exports = function(grunt) {
@@ -24,7 +25,7 @@ module.exports = function(grunt) {
         },
         concat:{
             basic: {
-                src: [srcPath + '*.js'],
+                src: [libPath + '*.js', srcPath + '*.js'],
                 dest: buildPath + 'gdapi-<%= pkg.version %>.js'
             },
             options: {
@@ -122,7 +123,7 @@ module.exports = function(grunt) {
     grunt.registerTask('testSetting',function(){
       grunt.config.set('concat',{
         basic : {
-          src: [srcPath + '*.js'],
+          src: [libPath + '*.js', srcPath + '*.js'],
           dest: 'build/gdapi-test.js'
         },
         options: {
