@@ -1,6 +1,6 @@
 {
   "name": "gdApi",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "5gamedom HTML5 Platform Game API",
   "main": "src/0_index.js",
   "scripts": {},
