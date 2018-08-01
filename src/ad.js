@@ -125,6 +125,9 @@ gdApi.Ad.prototype.run = function (opt) {
     }
 
     this.lastAdTime = Date.now();
+    if (gdApi.isMobile) {
+        this.adWrapper.style.display = "block";
+    }
     this.adMainContainer.style.display = "block";
     
     // 아래는 초기화 부분이 아닌 광고 호출 부분
@@ -200,7 +203,6 @@ gdApi.Ad.prototype._onAdsManagerLoaded = function(adsManagerLoadedEvent) {
         // adsManager 로드 후 버튼 생성해야 버튼 뜨자마자 클릭해도 문제 없음.
         this.adPlayImage.addEventListener("click", this._ad.bind(this));
         this.adPlayImage.style.opacity = 1;
-        this.adWrapper.style.display = "block";
     }
 };
   
@@ -251,8 +253,9 @@ gdApi.Ad.prototype._resumeAfterAd = function(isSuccess) {
 
     // 풀슬롯 재생이었을 경우에는 관련 변수 초기화
     if(this.isFullslot === true) {
-        this.isFullslot = false;
         this.adUrl = this._originAdUrl;
+        this.isFullslot = false;
+        this.adVideo.style.display = "block";
         delete this._originAdUrl;
     }
 }
@@ -268,6 +271,7 @@ gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
         this._originAdUrl = this.adUrl;
         this.adUrl = gdApi.adcode.ad.fullslot[gdApi.data.cn];
         this.isFullslot = true;
+        this.adVideo.style.display = "none";
         this.run({ retry: true });
     }else {
         this._resumeAfterAd(false);

@@ -17,7 +17,7 @@ gdApi.Point = new function() {
                 "<div>적립됩니다.</div>"
             ],
             body: [
-                "<span class='highlight'>100포인트</span>를 모으면",
+                "<span class='highlight'>100포인트</span>만 모으면",
                 "<span class='highlight'>100컬쳐캐쉬</span>로 즉시 전환"
             ]
         };

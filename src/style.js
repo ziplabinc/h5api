@@ -93,6 +93,14 @@ gdApi.style = new function() {
                 "background: -ms-linear-gradient(-45deg, rgba(90,213,186,1) 0%, rgba(91,203,249,1) 100%);", /* Opera 11.10+ */
                 "background: linear-gradient(135deg, rgba(90,213,186,1) 0%, rgba(91,203,249,1) 100%);", /* IE 10+ */
                 "filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#5ad5ba', endColorstr='#5bcbf9', GradientType=1 );", /* W3C */
+                "transition-property: opacity;",
+                "-o-transition-property: opacity;", // Opera
+                "-ms-transition-property: opacity;", // IE 9
+                "-moz-transition-property: opacity;", // Firefox
+                "transition-duration: .7s;",
+                "-o-transition-duration: .7s;", // Opera
+                "-ms-transition-duration: .7s;", // IE 9
+                "-moz-transition-duration: .7s;", // Firefox
             "}",
             "#adMobileCover #adPlayImage:after {",
                 "content: '';",
