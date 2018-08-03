@@ -16,17 +16,17 @@ Installation
         <script type="text/javascript" src="https://api.5gamedom.com/gdapi/build/gdapi2-latest.min.js"></script>
     </head>
     ```
-***
 
 Testing
 -------------
 - H5game Platform 상에 업로드된 게임이 아니라면 모든 기능은 Test mode로 구동됩니다.
 
+***
+
+
 **광고 및 포인트 API**
 -------------
 
-Description
--------------
 - 플랫폼에 입점되는 게임에는 사전 협의된 광고 시점에서 광고가 실행되어야 합니다.
     * (필수) 게임 시작 시
     * (필수) 게임 한판당 또는 적당한 특정 이벤트 시점 : gdApi에서 자동으로 60초에 한번씩 광고를 실행합니다.
@@ -121,7 +121,5 @@ gdApi.run
 **랭킹 API**
 -------------
 
-Description
--------------
 - 플랫폼 내 랭킹 시스템에 정보를 전달하고 받는 기능.
 - 랭킹 기능을 사용하기 위해서는 담당자와 사전 협의가 필요합니다.
