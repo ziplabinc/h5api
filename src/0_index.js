@@ -78,7 +78,6 @@ window.gdApi = new function() {
 
   // gdApi.data 채널명 초기화
   this.data.cn = document.domain.split(".")[0];
-  this.data.cn = (this.data.cn == "dev" || this.data.cn == "platform") ? "app" : this.data.cn;
 
 
   // gdApi._prevOnload =  window.onload || null;
@@ -110,6 +109,9 @@ window.gdApi = new function() {
       if(opt.isRank === true) loadArr.push("//api.5gamedom.com/rank.php?gd="+this.data.gd);
 
       this._loadScript(loadArr, function(useReward) {
+        // data.cn 보정
+        if(this.adcode.cn.indexOf(this.data.cn) === -1)  this.data.cn = "test";
+
         this.adList.normal = new this.Ad(
           this.adcode.ad.normal[gdApi.data.cn].replace("[gn]", this.data.gn),
           {

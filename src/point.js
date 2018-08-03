@@ -21,6 +21,10 @@ gdApi.Point = new function() {
                 "<span class='highlight'>100컬쳐캐쉬</span>로 즉시 전환"
             ]
         };
+        this.testVal = {
+            status : ["fail", "success", "not_login"],
+            amount : [10, 30, 50, 100, 1000, 10000]
+        }
 
         this.DOM.backScreen = document.createElement("div");
         this.DOM.backScreen.id = "gd-backScreen";
@@ -140,19 +144,28 @@ gdApi.Point = new function() {
         if (typeof opt.fail === "function")         this.failback = opt.fail;
         else                                        this.failback = null;
 
-        var xhr = new XMLHttpRequest();
-        // xhr.responseType = "json"; // It is not working in IE...
-        xhr.open("GET", "/accumulation/call/gift/"+opt.env+"/"+opt.action);
-        xhr.send(null);
-        xhr.onreadystatechange = function (e) {
-            if (xhr.readyState === 4) { // DONE
-                if (xhr.status === 200) { // OK
-                    this._openPopup(JSON.parse(xhr.response));
-                }else { // ETC(404, 503 ..)
-                    console.error("[gdApi.Point] Point xhrCall error: "+xhr.status+" "+xhr.statusText+" ("+xhr.responseURL+")");
-                    if(typeof this.failback == "function") this.failback();
-                }
+        if(opt.env == "test-directory") {
+            var testRtn = {
+                status: this.testVal.status[ Math.floor(Math.random()*this.testVal.status.length) ],
+                amount: this.testVal.amount[ Math.floor(Math.random()*this.testVal.amount.length) ]
             }
-        }.bind(this);
+            console.log(testRtn);
+            this._openPopup(testRtn);
+        }else {
+            var xhr = new XMLHttpRequest();
+            // xhr.responseType = "json"; // It is not working in IE...
+            xhr.open("GET", "/accumulation/call/gift/"+opt.env+"/"+opt.action);
+            xhr.send(null);
+            xhr.onreadystatechange = function (e) {
+                if (xhr.readyState === 4) { // DONE
+                    if (xhr.status === 200) { // OK
+                        this._openPopup(JSON.parse(xhr.response));
+                    }else { // ETC(404, 503 ..)
+                        console.error("[gdApi.Point] Point xhrCall error: "+xhr.status+" "+xhr.statusText+" ("+xhr.responseURL+")");
+                        if(typeof this.failback == "function") this.failback();
+                    }
+                }
+            }.bind(this);
+        }
     }.bind(this)
 };

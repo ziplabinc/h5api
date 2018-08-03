@@ -1,7 +1,7 @@
 {
-  "name": "gdApi",
-  "version": "2.0.6",
-  "description": "5gamedom HTML5 Platform Game API",
+  "name": "gdapi",
+  "version": "2.0.7",
+  "description": "H5game Platform Game API",
   "main": "src/0_index.js",
   "scripts": {},
   "author": "ZIP-LAB Inc.",

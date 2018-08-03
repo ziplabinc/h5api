@@ -4,7 +4,6 @@
 
 광고 및 포인트, 랭킹 기능이 포함된 ZIP-LAB H5game Platform 게임 API입니다.
 
-**_현재 API의 테스트 기능은 준비 중입니다._**
 
 Current version: v2.0.6
 
@@ -18,6 +17,10 @@ Installation
     </head>
     ```
 ***
+
+Testing
+-------------
+- H5game Platform 상에 업로드된 게임이 아니라면 모든 기능은 Test mode로 구동됩니다.
 
 **광고 및 포인트 API**
 -------------
