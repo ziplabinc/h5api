@@ -175,6 +175,15 @@ window.gdApi = new function() {
           if(typeof gdApiCallback == "function")  gdApiCallback();
         }.bind(this, runCallback);
 
+      }else if(runType == "start") {
+        var runSuccess = function (gdApiCallback) {
+          if(typeof gdApiCallback == "function")  gdApiCallback();
+        }.bind(this, runCallback);
+
+        var runFail = function(gdApiCallback) {
+          if(typeof gdApiCallback == "function")  gdApiCallback();
+        }.bind(this, runCallback);
+
       }else if(runType == "reward") {
         var runSuccess = function (gdApiCallback, success) {
           if(typeof success == "function")        success();
@@ -187,7 +196,8 @@ window.gdApi = new function() {
         }.bind(this, runCallback, opt.fail);
       }
 
-      var rtn = this.adList[runType].run({
+      var runAdType = (runType != "reward") ? "normal" : "reward";
+      var rtn = this.adList[runAdType].run({
         pauseGame: runPauseGame,
         resumeGame: runResumeGame,
         success: runSuccess,
