@@ -32,70 +32,7 @@ module.exports = function(grunt) {
               banner: '/*\n * build date : <%= grunt.template.today("yyyy-mm-dd HH:MM:ss") %>\n */\n',
               footer: '\ngdApi.VERSION = "<%= pkg.version %>"'
             }
-        },
-        // mocha : {
-        //   all : {
-        //     src : ['test/testrunner.html'],
-        //   },
-        //   options : {
-        //     run : true
-        //   }
-        // },
-        gitpull:{
-          your_target : {
-            options:{
-              branch : 'develop'
-            }
-          }
-        },
-        gitcheckout: {
-          your_target: {
-            options: {
-              branch : 'develop'
-            }
-          }
-        },
-        gitstash: {
-          your_target: {
-            options: {
-            }
-          }
-        },
-        gitmerge: {
-          your_target: {
-            options: {
-              branch : 'develop'
-            }
-          }
-        },
-        gitadd: {
-          task: {
-            options: {
-              force: true
-            },
-            files: {
-              src: ['package.json']
-            }
-          }
-        },
-        gitcommit: {
-          your_target: {
-            options: {
-              message : '<%= pkg.version %> update',
-              allowEmpty: false
-            },
-            files: {
-                // Specify the files you want to commit 
-            }
-          }
-        },
-        gitpush: {
-          your_target: {
-            options: {
-              branch : 'master'
-            }
-          }
-        },
+        }
     });
  
     grunt.loadNpmTasks('grunt-contrib-uglify');

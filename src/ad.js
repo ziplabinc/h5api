@@ -269,7 +269,7 @@ gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
     // (1009 VAST 에러일 경우 풀슬롯으로는 정상 동작하는 경우가 존재하므로)
     if(this.isFullslot !== true) {
         this._originAdUrl = this.adUrl;
-        this.adUrl = gdApi.adcode.ad.fullslot[gdApi.data.cn];
+        this.adUrl = gdApi.adcode.ad.fullslot[gdApi.data.cn].replace("[gn]", gdApi.data.gn).replace("[adc]", gdApi.data.adc);
         this.isFullslot = true;
         this.adVideo.style.display = "none";
         this.run({ retry: true });

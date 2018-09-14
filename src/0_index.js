@@ -74,6 +74,7 @@ window.gdApi = new function() {
   if(this.data.gt === undefined)  this.data.gt = "TEST GAME";
   if(this.data.gi === undefined)  this.data.gi = "../img/icon.jpg";
   if(this.data.gd === undefined)  this.data.gd = "test-directory";
+  if(this.data.adc === undefined)  this.data.adc = null;
   // TODO : 테스트모드 warn 세팅
 
   // gdApi.data 채널명 초기화
@@ -113,7 +114,7 @@ window.gdApi = new function() {
         if(this.adcode.cn.indexOf(this.data.cn) === -1)  this.data.cn = "test";
 
         this.adList.normal = new this.Ad(
-          this.adcode.ad.normal[gdApi.data.cn].replace("[gn]", this.data.gn),
+          this.adcode.ad.normal[gdApi.data.cn].replace("[gn]", this.data.gn).replace("[adc]", this.data.adc),
           {
             title: this.data.gt,
             image: this.data.gi,
@@ -123,7 +124,7 @@ window.gdApi = new function() {
         
         if(useReward === true) {
           this.adList.reward = new this.Ad(
-            this.adcode.ad.reward[gdApi.data.cn].replace("[gn]", this.data.gn),
+            this.adcode.ad.reward[gdApi.data.cn].replace("[gn]", this.data.gn).replace("[adc]", this.data.adc),
             {
               title: this.data.gt,
               image: this.data.gi,
