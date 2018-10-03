@@ -1,4 +1,4 @@
-window.gdApi = new function() {
+window.h5Api = new function() {
   this._isInit = "notSet";
 
   this.isMobile = function () {
@@ -42,7 +42,7 @@ window.gdApi = new function() {
   this.adList = {};
   this._adcodeCallback = function(json) { this.adcode = json; };
   this._getAdcode = function(codeCallback, codeUrl) {
-    if(codeCallback === undefined)  console.error("[gdApi] getCode param(codeCallback) is undefined");
+    if(codeCallback === undefined)  console.error("[h5Api] getCode param(codeCallback) is undefined");
     else {
       // _getAdcode 사용 시 _adcodeCallback 재선언
       this._adcodeCallback = function(callback, json) {
@@ -51,19 +51,19 @@ window.gdApi = new function() {
       }.bind(this, codeCallback);
     }
     if(codeUrl === undefined) {
-      codeUrl = '//api.5gamedom.com/adcode.php?callback=gdApi._adcodeCallback';
+      codeUrl = '//api.hifivegame.com/adcode.php?callback=h5Api._adcodeCallback';
     }
     var loadArr = ["//s0.2mdn.net/instream/html5/ima3.js", codeUrl];
 
     this._loadScript(loadArr, function(){});
   }
 
-  // gdApi.data 게임정보 초기화
+  // h5Api.data 게임정보 초기화
   try {
     throw JSON.stringify(window.parent.gameData);
   } catch(e) {
     if(e === undefined || e.name == "TypeError") {
-      // console.error("[gdApi.run] GameData was undefined or TypeError. Abort!");
+      // console.error("[h5Api.run] GameData was undefined or TypeError. Abort!");
       // return;
       this.data = {};
     }else {
@@ -77,11 +77,11 @@ window.gdApi = new function() {
   if(this.data.adc === undefined)  this.data.adc = null;
   // TODO : 테스트모드 warn 세팅
 
-  // gdApi.data 채널명 초기화
+  // h5Api.data 채널명 초기화
   this.data.cn = document.domain.split(".")[0];
 
 
-  // gdApi._prevOnload =  window.onload || null;
+  // h5Api._prevOnload =  window.onload || null;
   this.init = function(opt) {
 
     // argument 검증
@@ -94,17 +94,17 @@ window.gdApi = new function() {
     // if(opt.type === undefined)     var udfArg = "opt.type";
 
     if(udfArg) {
-      console.error("[gdApi.run] "+udfArg+" was undefined. Abort!");
+      console.error("[h5Api.run] "+udfArg+" was undefined. Abort!");
       return false;
     }
 
     if(this._isInit === "domReady") {
-      console.log("[gdapi] Initializing...");
-      // gdApi 초기화
+      console.log("[h5Api] Initializing...");
+      // h5Api 초기화
       this.Point.init();
 
       var loadArr = [
-        "//api.5gamedom.com/adcode.php?callback=gdApi._adcodeCallback",
+        "//api.5gamedom.com/adcode.php?callback=h5Api._adcodeCallback",
         "//s0.2mdn.net/instream/html5/ima3.js"
       ];
       if(opt.isRank === true) loadArr.push("//api.5gamedom.com/rank.php?gd="+this.data.gd);
@@ -114,7 +114,7 @@ window.gdApi = new function() {
         if(this.adcode.cn.indexOf(this.data.cn) === -1)  this.data.cn = "test";
 
         this.adList.normal = new this.Ad(
-          this.adcode.ad.normal[gdApi.data.cn].replace("[gn]", this.data.gn).replace("[adc]", this.data.adc),
+          this.adcode.ad.normal[h5Api.data.cn].replace("[gn]", this.data.gn).replace("[adc]", this.data.adc),
           {
             title: this.data.gt,
             image: this.data.gi,
@@ -124,7 +124,7 @@ window.gdApi = new function() {
         
         if(useReward === true) {
           this.adList.reward = new this.Ad(
-            this.adcode.ad.reward[gdApi.data.cn].replace("[gn]", this.data.gn).replace("[adc]", this.data.adc),
+            this.adcode.ad.reward[h5Api.data.cn].replace("[gn]", this.data.gn).replace("[adc]", this.data.adc),
             {
               title: this.data.gt,
               image: this.data.gi,
@@ -133,8 +133,8 @@ window.gdApi = new function() {
           );
         }
 
-        // gdApi 관련 처리 끝낸 후 기존 window.onload 호출
-        // if(typeof gdApi._prevOnload == "function")  gdApi._prevOnload();
+        // h5Api 관련 처리 끝낸 후 기존 window.onload 호출
+        // if(typeof h5Api._prevOnload == "function")  h5Api._prevOnload();
 
         this._isInit = "complete";
       }.bind(this, opt.useReward));
@@ -162,38 +162,38 @@ window.gdApi = new function() {
     
     if(this._isInit === "complete") {
       if(runType == "normal") {
-        var runSuccess = function (gdApiCallback) {
+        var runSuccess = function (h5ApiCallback) {
           this.Point.call({
             env: this.data.gd,
             pauseGame: runPauseGame,
             resumeGame: runResumeGame,
-            success: gdApiCallback,
-            fail: gdApiCallback,
+            success: h5ApiCallback,
+            fail: h5ApiCallback,
           });
         }.bind(this, runCallback);
 
-        var runFail = function(gdApiCallback) {
-          if(typeof gdApiCallback == "function")  gdApiCallback();
+        var runFail = function(h5ApiCallback) {
+          if(typeof h5ApiCallback == "function")  h5ApiCallback();
         }.bind(this, runCallback);
 
       }else if(runType == "start") {
-        var runSuccess = function (gdApiCallback) {
-          if(typeof gdApiCallback == "function")  gdApiCallback();
+        var runSuccess = function (h5ApiCallback) {
+          if(typeof h5ApiCallback == "function")  h5ApiCallback();
         }.bind(this, runCallback);
 
-        var runFail = function(gdApiCallback) {
-          if(typeof gdApiCallback == "function")  gdApiCallback();
+        var runFail = function(h5ApiCallback) {
+          if(typeof h5ApiCallback == "function")  h5ApiCallback();
         }.bind(this, runCallback);
 
       }else if(runType == "reward") {
-        var runSuccess = function (gdApiCallback, success) {
+        var runSuccess = function (h5ApiCallback, success) {
           if(typeof success == "function")        success();
-          if(typeof gdApiCallback == "function")  gdApiCallback();
+          if(typeof h5ApiCallback == "function")  h5ApiCallback();
         }.bind(this, runCallback, opt.success);
 
-        var runFail = function(gdApiCallback, fail) {
+        var runFail = function(h5ApiCallback, fail) {
           if(typeof fail == "function")           fail();
-          if(typeof gdApiCallback == "function")  gdApiCallback();
+          if(typeof h5ApiCallback == "function")  h5ApiCallback();
         }.bind(this, runCallback, opt.fail);
       }
 

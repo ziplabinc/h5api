@@ -16,21 +16,21 @@ module.exports = function(grunt) {
         },
         uglify: {
             options: {
-                banner: 'console.log("gdApi version : <%= pkg.version %> build date : <%= grunt.template.today("yyyy-mm-dd HH:MM:ss") %>");'
+                banner: 'console.log("h5Api version : <%= pkg.version %> build date : <%= grunt.template.today("yyyy-mm-dd HH:MM:ss") %>");'
             },
             build: {
-                src: buildPath + 'gdapi-<%= pkg.version %>.js',
-                dest: buildPath + 'gdapi-<%= pkg.version %>.min.js'
+                src: buildPath + 'h5api-<%= pkg.version %>.js',
+                dest: buildPath + 'h5api-<%= pkg.version %>.min.js'
             }
         },
         concat:{
             basic: {
                 src: [libPath + '*.js', srcPath + '*.js'],
-                dest: buildPath + 'gdapi-<%= pkg.version %>.js'
+                dest: buildPath + 'h5api-<%= pkg.version %>.js'
             },
             options: {
               banner: '/*\n * build date : <%= grunt.template.today("yyyy-mm-dd HH:MM:ss") %>\n */\n',
-              footer: '\ngdApi.VERSION = "<%= pkg.version %>"'
+              footer: '\nh5Api.VERSION = "<%= pkg.version %>"'
             }
         }
     });
@@ -61,11 +61,11 @@ module.exports = function(grunt) {
       grunt.config.set('concat',{
         basic : {
           src: [libPath + '*.js', srcPath + '*.js'],
-          dest: 'build/gdapi-test.js'
+          dest: 'build/h5api-test.js'
         },
         options: {
           banner: '/*\n * build date : <%= grunt.template.today("yyyy-mm-dd HH:MM:ss") %>\n */\n',
-          footer: '\ngdApi.VERSION = "Testing on <%= pkg.version %>"'
+          footer: '\nh5Api.VERSION = "Testing on <%= pkg.version %>"'
         }
       })
     });

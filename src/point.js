@@ -1,8 +1,8 @@
-gdApi.Point = new function() {
+h5Api.Point = new function() {
     this.DOM = {};
     this.init = function() {
         if(document.body === null || document.body === undefined) {
-            console.error("[gdApi.Point] gdApi.Point must be call after window.onload. Abort!");
+            console.error("[h5Api.Point] h5Api.Point must be call after window.onload. Abort!");
             return;
         }
 
@@ -115,14 +115,14 @@ gdApi.Point = new function() {
             this.DOM.notloginText.style.display = "block";
 
             this.DOM.loginBtn.style.display = "block";
-            this.DOM.topImage.style.backgroundImage = "url("+gdApi.style.imageURI.bgNotlogin+")";
+            this.DOM.topImage.style.backgroundImage = "url("+h5Api.style.imageURI.bgNotlogin+")";
         }
         else if(data.status == "success") {
             this.DOM.notloginText.style.display = "none";
             this.DOM.successText.style.display = "block";
 
             this.DOM.loginBtn.style.display = "none";
-            this.DOM.topImage.style.backgroundImage = "url("+gdApi.style.imageURI.bgSuccess+")";
+            this.DOM.topImage.style.backgroundImage = "url("+h5Api.style.imageURI.bgSuccess+")";
         }
 
         this.DOM.backScreen.style.display = "block";
@@ -131,7 +131,7 @@ gdApi.Point = new function() {
     this.call = function(opt) {
         if(opt === undefined)                       opt = {}
         if (opt.env === undefined) {
-            console.error("[gdApi.Point] call env argument is undefined");
+            console.error("[h5Api.Point] call env argument is undefined");
             return;
         }
         if (opt.action === undefined)               opt.action = "";
@@ -161,7 +161,7 @@ gdApi.Point = new function() {
                     if (xhr.status === 200) { // OK
                         this._openPopup(JSON.parse(xhr.response));
                     }else { // ETC(404, 503 ..)
-                        console.error("[gdApi.Point] Point xhrCall error: "+xhr.status+" "+xhr.statusText+" ("+xhr.responseURL+")");
+                        console.error("[h5Api.Point] Point xhrCall error: "+xhr.status+" "+xhr.statusText+" ("+xhr.responseURL+")");
                         if(typeof this.failback == "function") this.failback();
                     }
                 }

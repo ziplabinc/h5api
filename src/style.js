@@ -1,4 +1,4 @@
-gdApi.style = new function() {
+h5Api.style = new function() {
     this.css = {
         ad: [
             "body .adMainContainer {",
@@ -244,6 +244,6 @@ gdApi.style = new function() {
         }
         document.body.appendChild(this._dom);
         
-        gdApi._isInit = "domReady";
+        h5Api._isInit = "domReady";
     }.bind(this));
 }

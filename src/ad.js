@@ -1,9 +1,9 @@
-gdApi.Ad = function (adUrl, opt) {
+h5Api.Ad = function (adUrl, opt) {
     if(document.body === null || document.body === undefined) {
-        console.error("[gdApi.Ad] new gdApi.Ad must be call after window.onload. Abort!");
+        console.error("[h5Api.Ad] new h5Api.Ad must be call after window.onload. Abort!");
         return;
     }
-    if (adUrl === undefined)  console.error("[gdApi.Ad] adUrl is not defined. Abort!");
+    if (adUrl === undefined)  console.error("[h5Api.Ad] adUrl is not defined. Abort!");
     else                      this.adUrl = adUrl;
   
     if (opt === undefined)    opt = {};
@@ -28,11 +28,11 @@ gdApi.Ad = function (adUrl, opt) {
     this._initAdsense();
 };
 
-gdApi.Ad.prototype._initAdsense = function () {
+h5Api.Ad.prototype._initAdsense = function () {
     if(document.querySelector("body #adWrapper") !== null) {
         this.adWrapper  = document.querySelector("body #adWrapper");
         this.adPlayImage  = document.querySelector("body #adWrapper #adPlayImage");
-    }else if(gdApi.isMobile) { //모바일일 경우에만 Wrapper 생성
+    }else if(h5Api.isMobile) { //모바일일 경우에만 Wrapper 생성
         this.adWrapper = document.createElement('div');
         this.adWrapper.id = "adWrapper";
         document.body.appendChild(this.adWrapper);
@@ -73,7 +73,7 @@ gdApi.Ad.prototype._initAdsense = function () {
     this.adVideo.style.width = window.innerWidth+"px";
     this.adVideo.style.height = window.innerHeight+"px";
     this.adVideo.classList.add("adVideo");
-    if(gdApi.isIOS) {
+    if(h5Api.isIOS) {
         // see https://developers.google.com/interactive-media-ads/docs/sdks/html5/skippable-ads
         this.adVideo.setAttribute("playsinline","");
     }
@@ -90,7 +90,7 @@ gdApi.Ad.prototype._initAdsense = function () {
     this.adDisplayContainer = new google.ima.AdDisplayContainer(this.adContainer, this.adVideo);   
 
     this.adsLoader = new google.ima.AdsLoader(this.adDisplayContainer);
-    if(gdApi.isIOS) {
+    if(h5Api.isIOS) {
         // see https://developers.google.com/interactive-media-ads/docs/sdks/html5/skippable-ads
         this.adsLoader.getSettings().setDisableCustomPlaybackForIOS10Plus(true);
     }
@@ -104,7 +104,7 @@ gdApi.Ad.prototype._initAdsense = function () {
     );
 };
 
-gdApi.Ad.prototype.run = function (opt) {
+h5Api.Ad.prototype.run = function (opt) {
     if (opt === undefined)                          opt = {};
     if(opt.retry !== true) {
         if (typeof opt.success === "function")      this.callback = opt.success;
@@ -125,7 +125,7 @@ gdApi.Ad.prototype.run = function (opt) {
     }
 
     this.lastAdTime = Date.now();
-    if (gdApi.isMobile) {
+    if (h5Api.isMobile) {
         this.adWrapper.style.display = "block";
     }
     this.adMainContainer.style.display = "block";
@@ -150,8 +150,8 @@ gdApi.Ad.prototype.run = function (opt) {
     return true;
 };
   
-gdApi.Ad.prototype._ad = function () {
-    if (gdApi.isMobile) {
+h5Api.Ad.prototype._ad = function () {
+    if (h5Api.isMobile) {
       this.adWrapper.style.display = "none";
       this.adMainContainer.style.backgroundColor = "black";
     }
@@ -160,13 +160,13 @@ gdApi.Ad.prototype._ad = function () {
       this.adsManager.start();
       this.adPlayCount++;
     } catch (adError) {
-      console.error("[gdApi.Ad] adsManager.start ErrorCode "+adErrorEvent.h.h+" : "+adErrorEvent.h.l);
+      console.error("[h5Api.Ad] adsManager.start ErrorCode "+adErrorEvent.h.h+" : "+adErrorEvent.h.l);
       this._resumeAfterAd(false);
     }
   };
   
-gdApi.Ad.prototype._onAdsManagerLoaded = function(adsManagerLoadedEvent) {
-    console.log("[gdApi.Ad] _onAdsManagerLoaded start")
+h5Api.Ad.prototype._onAdsManagerLoaded = function(adsManagerLoadedEvent) {
+    console.log("[h5Api.Ad] _onAdsManagerLoaded start")
   
     // Get the ads manager.
     var adsRenderingSettings = new google.ima.AdsRenderingSettings();
@@ -197,7 +197,7 @@ gdApi.Ad.prototype._onAdsManagerLoaded = function(adsManagerLoadedEvent) {
     }.bind(this));
   
   
-    if (!gdApi.isMobile)
+    if (!h5Api.isMobile)
         this._ad();
     else {
         // adsManager 로드 후 버튼 생성해야 버튼 뜨자마자 클릭해도 문제 없음.
@@ -206,7 +206,7 @@ gdApi.Ad.prototype._onAdsManagerLoaded = function(adsManagerLoadedEvent) {
     }
 };
   
-gdApi.Ad.prototype._onAdEvent = function(adEvent) {
+h5Api.Ad.prototype._onAdEvent = function(adEvent) {
     var ad = adEvent.getAd();
     switch (adEvent.type) {
         case google.ima.AdEvent.Type.LOADED:
@@ -232,19 +232,19 @@ gdApi.Ad.prototype._onAdEvent = function(adEvent) {
     }
 };
 
-gdApi.Ad.prototype._forceOpenCover = function() {
+h5Api.Ad.prototype._forceOpenCover = function() {
     this.adPlayImage.addEventListener("click", this._ad.bind(this));
     this.adPlayImage.style.opacity = 1;
     this.adWrapper.style.display = "block";
 }
-gdApi.Ad.prototype._resumeAfterAd = function(isSuccess) {
+h5Api.Ad.prototype._resumeAfterAd = function(isSuccess) {
 
     if (typeof this.resumeGame === "function")              this.resumeGame();
     if (typeof this.callback === "function" && isSuccess)   this.callback();
     if (typeof this.failback === "function" && !isSuccess)  this.failback();
 
     // 광고 뷰 관련 초기화
-    if (gdApi.isMobile) {
+    if (h5Api.isMobile) {
         this.adPlayImage.removeEventListener("click", this._ad);
         this.adPlayImage.style.opacity = 0;
         this.adWrapper.style.display = "none";
@@ -260,8 +260,8 @@ gdApi.Ad.prototype._resumeAfterAd = function(isSuccess) {
     }
 }
 
-gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
-    console.warn("[gdApi.Ad] ErrorCode "+adErrorEvent.h.h+" : "+adErrorEvent.h.l);
+h5Api.Ad.prototype._onAdError = function(adErrorEvent) {
+    console.warn("[h5Api.Ad] ErrorCode "+adErrorEvent.h.h+" : "+adErrorEvent.h.l);
     
     if (this.adsManager !== undefined)  this.adsManager.destroy();
 
@@ -269,7 +269,7 @@ gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
     // (1009 VAST 에러일 경우 풀슬롯으로는 정상 동작하는 경우가 존재하므로)
     if(this.isFullslot !== true) {
         this._originAdUrl = this.adUrl;
-        this.adUrl = gdApi.adcode.ad.fullslot[gdApi.data.cn].replace("[gn]", gdApi.data.gn).replace("[adc]", gdApi.data.adc);
+        this.adUrl = h5Api.adcode.ad.fullslot[h5Api.data.cn].replace("[gn]", h5Api.data.gn).replace("[adc]", h5Api.data.adc);
         this.isFullslot = true;
         this.adVideo.style.display = "none";
         this.run({ retry: true });
@@ -278,6 +278,6 @@ gdApi.Ad.prototype._onAdError = function(adErrorEvent) {
     }
 };
   
-gdApi.Ad.prototype._onContentPauseRequested = function() {};
+h5Api.Ad.prototype._onContentPauseRequested = function() {};
 
-gdApi.Ad.prototype._onContentResumeRequested = function() {};
+h5Api.Ad.prototype._onContentResumeRequested = function() {};
