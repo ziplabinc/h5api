@@ -1,29 +1,30 @@
-h5Api.Point = new function() {
+h5Api.Token = new function() {
     this.DOM = {};
     this.init = function() {
         if(document.body === null || document.body === undefined) {
-            console.error("[h5Api.Point] h5Api.Point must be call after window.onload. Abort!");
+            console.error("[h5Api.Token] h5Api.Token must be call after window.onload. Abort!");
             return;
         }
 
         this._descText = {
             success: [
-                "<div>축하합니다!</div>",
-                "<div><span class='amount'></span>P</div>"
+                "<div>플레이 보상 획득!</div>",
+                "<div><div class='token-center'>+<span class='amount'></span></div></div>"
             ],
             not_login: [
-                "<div>악!! 포인트는</div>",
+                "<div>토큰<div class='token-inline'></div>은</div>",
                 "<div>로그인 상태에서만</div>",
-                "<div>적립됩니다.</div>"
+                "<div>획득됩니다.</div>"
             ],
             body: [
-                "<span class='highlight'>100포인트</span>만 모으면",
-                "<span class='highlight'>100컬쳐캐쉬</span>로 즉시 전환"
+                "토큰을 획득해서",
+                "<span class='highlight'>랭킹전</span>에 참여하세요!",
+                "<span class='small'>(정식 오픈 시 랭킹전 시작)</span>"
             ]
         };
         this.testVal = {
             status : ["fail", "success", "not_login"],
-            amount : [10, 30, 50, 100, 1000, 10000]
+            amount : [1]
         }
 
         this.DOM.backScreen = document.createElement("div");
@@ -131,7 +132,7 @@ h5Api.Point = new function() {
     this.call = function(opt) {
         if(opt === undefined)                       opt = {}
         if (opt.env === undefined) {
-            console.error("[h5Api.Point] call env argument is undefined");
+            console.error("[h5Api.Token] call env argument is undefined");
             return;
         }
         if (opt.action === undefined)               opt.action = "";
@@ -161,7 +162,7 @@ h5Api.Point = new function() {
                     if (xhr.status === 200) { // OK
                         this._openPopup(JSON.parse(xhr.response));
                     }else { // ETC(404, 503 ..)
-                        console.error("[h5Api.Point] Point xhrCall error: "+xhr.status+" "+xhr.statusText+" ("+xhr.responseURL+")");
+                        console.error("[h5Api.Token] Token xhrCall error: "+xhr.status+" "+xhr.statusText+" ("+xhr.responseURL+")");
                         if(typeof this.failback == "function") this.failback();
                     }
                 }

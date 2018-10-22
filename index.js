@@ -101,13 +101,13 @@ window.h5Api = new function() {
     if(this._isInit === "domReady") {
       console.log("[h5Api] Initializing...");
       // h5Api 초기화
-      this.Point.init();
+      this.Token.init();
 
       var loadArr = [
-        "//api.5gamedom.com/adcode.php?callback=h5Api._adcodeCallback",
+        "//api.hifivegame.com/adcode.php?callback=h5Api._adcodeCallback",
         "//s0.2mdn.net/instream/html5/ima3.js"
       ];
-      if(opt.isRank === true) loadArr.push("//api.5gamedom.com/rank.php?gd="+this.data.gd);
+      if(opt.isRank === true) loadArr.push("//api.hifivegame.com/rank.php?gd="+this.data.gd);
 
       this._loadScript(loadArr, function(useReward) {
         // data.cn 보정
@@ -163,7 +163,7 @@ window.h5Api = new function() {
     if(this._isInit === "complete") {
       if(runType == "normal") {
         var runSuccess = function (h5ApiCallback) {
-          this.Point.call({
+          this.Token.call({
             env: this.data.gd,
             pauseGame: runPauseGame,
             resumeGame: runResumeGame,

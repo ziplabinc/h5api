@@ -25,7 +25,7 @@ module.exports = function(grunt) {
         },
         concat:{
             basic: {
-                src: [libPath + '*.js', srcPath + '*.js'],
+                src: [libPath + '*.js', 'index.js', srcPath + '*.js'],
                 dest: buildPath + 'h5api-<%= pkg.version %>.js'
             },
             options: {
@@ -60,7 +60,7 @@ module.exports = function(grunt) {
     grunt.registerTask('testSetting',function(){
       grunt.config.set('concat',{
         basic : {
-          src: [libPath + '*.js', srcPath + '*.js'],
+          src: [libPath + '*.js', 'index.js', srcPath + '*.js'],
           dest: 'build/h5api-test.js'
         },
         options: {
@@ -76,5 +76,6 @@ module.exports = function(grunt) {
     grunt.registerTask('patch', ['version::patch','pkgReload','concat', 'uglify']);
     grunt.registerTask('minor', ['version::minor','pkgReload','concat', 'uglify']);
     grunt.registerTask('major', ['version::major','pkgReload','concat', 'uglify']);
-    grunt.registerTask('test', ['testSetting','concat']);
+    grunt.registerTask('test',  ['testSetting','concat']);
+    grunt.registerTask('build', ['pkgReload','concat', 'uglify']);
 };
