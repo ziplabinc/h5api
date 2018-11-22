@@ -9,10 +9,10 @@ h5Api.Token = new function() {
         this._descText = {
             success: [
                 "<div>플레이 보상 획득!</div>",
-                "<div><div class='token-center'>+<span class='amount'></span></div></div>"
+                "<div><div class='round-box token'>+<span class='amount'></span></div></div>"
             ],
             not_login: [
-                "<div>토큰<div class='token-inline'></div>은</div>",
+                "<div>토큰<div class='hi-token-inline'></div>은</div>",
                 "<div>로그인 상태에서만</div>",
                 "<div>획득됩니다.</div>"
             ],
@@ -27,48 +27,39 @@ h5Api.Token = new function() {
             amount : [1]
         }
 
-        this.DOM.backScreen = document.createElement("div");
-        this.DOM.backScreen.id = "gd-backScreen";
-        // this.DOM.backScreen.addEventListener("click", function(e) {
-        //     if(e.target.id != "gd-backScreen") return;
-        //     e.target.style.display = "none";
-        //     if(typeof this.resumeGame == "function") this.resumeGame();
-        //     if(typeof this.callback == "function") this.callback();
-        // }.bind(this));
-        document.body.appendChild(this.DOM.backScreen);
-
         this.DOM.mainPopup = document.createElement("div");
-        this.DOM.mainPopup.id = "gd-popup";
-        this.DOM.backScreen.appendChild(this.DOM.mainPopup);
+        this.DOM.mainPopup.id = "token-popup";
+        this.DOM.mainPopup.classList.add("hi-popup");
+        h5Api.style.backScreen.appendChild(this.DOM.mainPopup);
 
         this.DOM.topImage = document.createElement("div");
-        this.DOM.topImage.id = "gd-top-image";
+        this.DOM.topImage.classList.add("hi-top-image");
         this.DOM.mainPopup.appendChild(this.DOM.topImage);
 
         this.DOM.successText = document.createElement("div");
-        this.DOM.successText.id = "gd-text-success";
-        this.DOM.successText.classList.add("gd-text-header");
+        this.DOM.successText.classList.add("hi-text-success");
+        this.DOM.successText.classList.add("hi-text-header");
         this.DOM.successText.innerHTML = this._descText.success.join("");
         this.DOM.mainPopup.appendChild(this.DOM.successText);
         
         this.DOM.notloginText = document.createElement("div");
-        this.DOM.notloginText.id = "gd-text-notlogin";
-        this.DOM.notloginText.classList.add("gd-text-header");
+        this.DOM.notloginText.classList.add("hi-text-fail");
+        this.DOM.notloginText.classList.add("hi-text-header");
         this.DOM.notloginText.innerHTML = this._descText.not_login.join("");
         this.DOM.mainPopup.appendChild(this.DOM.notloginText);
         
         var bodyText = document.createElement("div");
-        bodyText.classList.add("gd-text-body");
+        bodyText.classList.add("hi-text-body");
         bodyText.innerHTML = this._descText.body.join("<br>");
         this.DOM.mainPopup.appendChild(bodyText);
         
         var buttonBox = document.createElement("div");
-        buttonBox.id = "gd-button-box";
+        buttonBox.classList.add("hi-button-box");
         this.DOM.mainPopup.appendChild(buttonBox);
 
         this.DOM.loginBtn = document.createElement("div");
-        this.DOM.loginBtn.id = "gd-login";
-        this.DOM.loginBtn.classList.add("gd-button");
+        this.DOM.loginBtn.classList.add("hi-login");
+        this.DOM.loginBtn.classList.add("hi-button");
         this.DOM.loginBtn.innerText = "로그인 하기";
         this.DOM.loginBtn.addEventListener("click", function(e) {
             parent.parent.location.href="/access?mode=login";
@@ -76,10 +67,10 @@ h5Api.Token = new function() {
         buttonBox.appendChild(this.DOM.loginBtn);
 
         var submitBtn = document.createElement("div");
-        submitBtn.classList.add("gd-button");
+        submitBtn.classList.add("hi-button");
         submitBtn.innerText = "게임 계속하기";
         submitBtn.addEventListener("click", function(e) {
-            this.DOM.backScreen.style.display = "none";
+            h5Api.style.backScreen.activePopup = null;
 
             if(typeof this.resumeGame == "function")    this.resumeGame();
             if(typeof this.sucsback == "function")      this.sucsback();
@@ -126,7 +117,7 @@ h5Api.Token = new function() {
             this.DOM.topImage.style.backgroundImage = "url("+h5Api.style.imageURI.bgSuccess+")";
         }
 
-        this.DOM.backScreen.style.display = "block";
+        h5Api.style.backScreen.activePopup = "token-popup";
     }.bind(this)
 
     this.call = function(opt) {

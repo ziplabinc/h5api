@@ -66,8 +66,11 @@ window.h5Api = new function() {
       // console.error("[h5Api.run] GameData was undefined or TypeError. Abort!");
       // return;
       this.data = {};
+      this.testMode = true;
+      console.warn("[h5Api] Settings not found. Test mode is activated."); // 테스트모드 warn 세팅
     }else {
       this.data = JSON.parse(e);
+      this.testMode = false;
     }
   }
   if(this.data.gn === undefined)  this.data.gn = "0";
@@ -75,7 +78,7 @@ window.h5Api = new function() {
   if(this.data.gi === undefined)  this.data.gi = "../img/icon.jpg";
   if(this.data.gd === undefined)  this.data.gd = "test-directory";
   if(this.data.adc === undefined)  this.data.adc = null;
-  // TODO : 테스트모드 warn 세팅
+  if(this.data.isRank === undefined)  this.data.isRank = 1;
 
   // h5Api.data 채널명 초기화
   this.data.cn = document.domain.split(".")[0];
@@ -107,7 +110,10 @@ window.h5Api = new function() {
         "//api.hifivegame.com/adcode.php?callback=h5Api._adcodeCallback",
         "//s0.2mdn.net/instream/html5/ima3.js"
       ];
-      if(opt.isRank === true) loadArr.push("//api.hifivegame.com/rank.php?gd="+this.data.gd);
+
+      // 플랫폼의 isRank 여부와 게임내 isRank 모두 체크
+      // if(this.data.isRank && opt.isRank === true) loadArr.push("//api.hifivegame.com/rank.php?gd="+this.data.gd);
+      if(this.data.isRank && opt.isRank === true) this.Rank.init();
 
       this._loadScript(loadArr, function(useReward) {
         // data.cn 보정
@@ -149,6 +155,9 @@ window.h5Api = new function() {
   }
 
   this.run = function(opt) {
+    // 플랫폼의 isRank가 1일 때 광고 차단
+    if(this.data.isRank && !this.testMode) return;
+
     // argument 검증
     if (opt === undefined)                      opt = {};
     if (opt.type !== undefined)                 var runType = opt.type;
@@ -215,30 +224,6 @@ window.h5Api = new function() {
         );
       }.bind(this), 200);
     }
-  }
-
-  this.cc = function (k) { // chocolateCake
-    var r = '';
-    var line = k.split(String.fromCharCode(0x3000));
-    for (var i = 0; i < line.length; i++) {
-      r += String.fromCharCode(
-        parseInt(
-          line[i].replace(/\t/gi, "1").replace(/ /gi, "0"),
-          2
-        )
-        .toString(10)
-      );
-    }
-    return r;
-  };
-  this.bc = function (t) {
-    var r = '';
-    for (var i = 0; i < t.length; i++) {
-      r += (t[i].charCodeAt()).toString(2)
-        .replace(/1/gi, "	").replace(/0/gi, " ");
-      r += String.fromCharCode(0x3000);
-    }
-    return r.slice(0,-1);
   }
 
 }
