@@ -9,7 +9,7 @@ h5Api.Token = new function() {
         this._descText = {
             success: [
                 "<div>플레이 보상 획득!</div>",
-                "<div><div class='round-box token'>+<span class='amount'></span></div></div>"
+                "<div><div class='round-box token big'><div class='hi-token-inline'></div><span class='amount'></span></div></div>"
             ],
             not_login: [
                 "<div>토큰<div class='hi-token-inline'></div>은</div>",
@@ -17,7 +17,7 @@ h5Api.Token = new function() {
                 "<div>획득됩니다.</div>"
             ],
             body: [
-                "토큰을 획득해서",
+                "<div class='hi-token-inline'></div>토큰을 획득해서",
                 "<span class='highlight'>랭킹전</span>에 참여하세요!"
             ]
         };
