@@ -18,8 +18,7 @@ h5Api.Token = new function() {
             ],
             body: [
                 "토큰을 획득해서",
-                "<span class='highlight'>랭킹전</span>에 참여하세요!",
-                "<span class='small'>(정식 오픈 시 랭킹전 시작)</span>"
+                "<span class='highlight'>랭킹전</span>에 참여하세요!"
             ]
         };
         this.testVal = {

@@ -73,12 +73,14 @@ window.h5Api = new function() {
       this.testMode = false;
     }
   }
-  if(this.data.gn === undefined)  this.data.gn = "0";
-  if(this.data.gt === undefined)  this.data.gt = "TEST GAME";
-  if(this.data.gi === undefined)  this.data.gi = "../img/icon.jpg";
-  if(this.data.gd === undefined)  this.data.gd = "test-directory";
-  if(this.data.adc === undefined)  this.data.adc = null;
-  if(this.data.isRank === undefined)  this.data.isRank = 1;
+  if(this.data.gn === undefined)          this.data.gn = "0";
+  if(this.data.gt === undefined)          this.data.gt = "TEST GAME";
+  if(this.data.gi === undefined)          this.data.gi = "../img/icon.jpg";
+  if(this.data.gd === undefined)          this.data.gd = "test-directory";
+  if(this.data.adc === undefined)         this.data.adc = null;
+  if(this.data.isRank === undefined)      this.data.isRank = 1;
+  if(this.data.accessCode === undefined)  this.data.accessCode = "testCode";
+  if(this.data.matchCost === undefined)   this.data.matchCost = 1;
 
   // h5Api.data 채널명 초기화
   this.data.cn = document.domain.split(".")[0];
@@ -226,4 +228,20 @@ window.h5Api = new function() {
     }
   }
 
+  this.b64EncodeUnicode = function(str) {
+    // first we use encodeURIComponent to get percent-encoded UTF-8,
+    // then we convert the percent encodings into raw bytes which
+    // can be fed into btoa.
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+        function toSolidBytes(match, p1) {
+            return String.fromCharCode('0x' + p1);
+    }));
+  }
+
+  this.b64DecodeUnicode = function(str) {
+    // Going backwards: from bytestream, to percent-encoding, to original string.
+    return decodeURIComponent(atob(str).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+  }
 }

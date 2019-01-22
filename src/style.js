@@ -209,36 +209,36 @@ h5Api.style = new function() {
                 "font-size: 22px;",
             "}",
             "#token-popup.hi-popup .hi-text-success > div:nth-child(1) {",
-                "font-size: 1.8rem;",
+                "font-size: 27px;",
             "}",
             "#token-popup.hi-popup .hi-text-success > div:nth-child(2) {",
-                "font-size: 3rem;",
+                "font-size: 44px;",
                 "text-shadow: 0 0;",
                 "color: #000;",
                 "margin-top: 10px",
             "}",
             "#token-popup.hi-popup .hi-text-fail {",
-                "font-size: 1.5rem;",
+                "font-size: 23px;",
             "}",
 
             "#rank-popup.hi-popup .hi-text-header > div:nth-child(1) {",
-                "font-size: 1.8rem;",
+                "font-size: 27px;",
             "}",
             "#rank-popup.hi-popup .hi-text-header > div:nth-child(2) {",
-                "font-size: 3rem;",
+                "font-size: 44px;",
                 "text-shadow: 0 0;",
                 "color: #000;",
                 "margin-top: 10px",
             "}",
             "#rank-popup.hi-popup .hi-text-header > div:nth-child(3) {",
-                "font-size: 1rem;",
+                "font-size: 15px;",
                 "margin-top: 15px;",
             "}",
 
             ".hi-text-body {",
                 "position: absolute;",
                 "text-align: center;",
-                "font-size: 1.3rem;",
+                "font-size: 19px;",
                 "font-weight: 600;",
                 "width: 100%;",
                 "padding: 20px 0px;",
@@ -248,7 +248,7 @@ h5Api.style = new function() {
                 "color: #8A1818;",
             "}",
             ".hi-text-body .small {",
-                "font-size: 1rem;",
+                "font-size: 15px;",
             "}",
     
             ".hi-button-box {",
@@ -270,12 +270,25 @@ h5Api.style = new function() {
                 "width: 100%;",
                 "margin: 16px 0;",
                 "padding: 8px 0;",
-                "background: #FFBB17;",
+                "background: #1a8748;",
                 "border-radius: 8px;",
                 "font-weight: bold;",
                 "font-size: 14px;",
                 "color: #fff;",
                 "line-height: 20px;",
+                "cursor: pointer;",
+            "}",
+            ".hi-button.half {",
+                "display: inline-block;",
+                "width: 48%;",
+            "}",
+            ".hi-button.half:nth-child(1) {",
+                "margin-right: 2%;",
+                "background: #1a8748;",
+            "}",
+            ".hi-button.half:nth-child(2) {",
+                "margin-left: 2%;",
+                "background: #696969;",
             "}"
         ]
     };
@@ -310,6 +323,12 @@ h5Api.style = new function() {
         //     if(typeof this.callback == "function") this.callback();
         // }.bind(this));
         document.body.appendChild(this.backScreen);
+
+        var stopEvt = function(e) { e.stopPropagation(); }
+        this.backScreen.addEventListener("click", stopEvt);
+        this.backScreen.addEventListener("touchstart", stopEvt);
+        this.backScreen.addEventListener("touchend", stopEvt);
+        this.backScreen.addEventListener("touchcancel", stopEvt);
 
         // 활성팝업 설정_activePopup 세팅
         this.backScreen._activePopup = null;
