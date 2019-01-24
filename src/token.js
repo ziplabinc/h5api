@@ -123,7 +123,7 @@ h5Api.Token = new function() {
             this.DOM.submitBtn.classList.remove("deactive");
             
             this.DOM.mainPopup.querySelector(".have-token").style.display = "inline-block";
-            this.DOM.mainPopup.querySelector(".have-token .amount").innerText = data.remainToken || "-";
+            this.DOM.mainPopup.querySelector(".have-token .amount").innerText = h5Api.data.remainToken++ || "-";
 
             this.DOM.successText.querySelector(".hi-token-inline").classList.toggle("show-token")
             this.DOM.successText.querySelector(".round-box.token .amount").classList.toggle("show-token-amount")

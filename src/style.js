@@ -315,7 +315,7 @@ h5Api.style = new function() {
             ".hi-text-body .have-token {",
                 "position: relative;",
                 "width: 200px;",
-                "margin-top: 15px;",
+                "margin-top: 20px;",
                 "border: 2px solid #1e8349;",
                 "border-radius: 20px;",
                 "display: inline-block;",
