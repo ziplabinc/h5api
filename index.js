@@ -73,12 +73,14 @@ window.h5Api = new function() {
       this.testMode = false;
     }
   }
-  if(this.data.gn === undefined)  this.data.gn = "0";
-  if(this.data.gt === undefined)  this.data.gt = "TEST GAME";
-  if(this.data.gi === undefined)  this.data.gi = "../img/icon.jpg";
-  if(this.data.gd === undefined)  this.data.gd = "test-directory";
-  if(this.data.adc === undefined)  this.data.adc = null;
-  if(this.data.isRank === undefined)  this.data.isRank = 1;
+  if(this.data.gn === undefined)          this.data.gn = "0";
+  if(this.data.gt === undefined)          this.data.gt = "TEST GAME";
+  if(this.data.gi === undefined)          this.data.gi = "../img/icon.jpg";
+  if(this.data.gd === undefined)          this.data.gd = "test-directory";
+  if(this.data.adc === undefined)         this.data.adc = null;
+  if(this.data.isRank === undefined)      this.data.isRank = 1;
+  if(this.data.accessCode === undefined)  this.data.accessCode = "testCode";
+  if(this.data.matchCost === undefined)   this.data.matchCost = 1;
 
   // h5Api.data 채널명 초기화
   this.data.cn = document.domain.split(".")[0];
@@ -94,7 +96,7 @@ window.h5Api = new function() {
     if (typeof opt.resumeGame === "function")   this.resumeGame = opt.resumeGame;
     else                                        var udfArg = "opt.resumeGame";
     if (typeof opt.callback === "function")     this.callback = opt.callback;
-    // if(opt.type === undefined)     var udfArg = "opt.type";
+    else                                        this.callback = function(){};
 
     if(udfArg) {
       console.error("[h5Api.run] "+udfArg+" was undefined. Abort!");
@@ -155,9 +157,6 @@ window.h5Api = new function() {
   }
 
   this.run = function(opt) {
-    // 플랫폼의 isRank가 1일 때 광고 차단
-    if(this.data.isRank && !this.testMode) return;
-
     // argument 검증
     if (opt === undefined)                      opt = {};
     if (opt.type !== undefined)                 var runType = opt.type;
@@ -169,41 +168,38 @@ window.h5Api = new function() {
     if (typeof opt.callback === "function")     var runCallback = opt.callback;
     else                                        var runCallback = this.callback;
     
+    // 플랫폼의 isRank가 1일 때 광고 차단
+    if(this.data.isRank && !this.testMode) {
+      runCallback();
+      return;
+    }
+    
     if(this._isInit === "complete") {
       if(runType == "normal") {
-        var runSuccess = function (h5ApiCallback) {
+        var runSuccess = function () {
           this.Token.call({
             env: this.data.gd,
             pauseGame: runPauseGame,
             resumeGame: runResumeGame,
-            success: h5ApiCallback,
-            fail: h5ApiCallback,
+            success: runCallback,
+            fail: runCallback
           });
-        }.bind(this, runCallback);
-
-        var runFail = function(h5ApiCallback) {
-          if(typeof h5ApiCallback == "function")  h5ApiCallback();
-        }.bind(this, runCallback);
-
-      }else if(runType == "start") {
-        var runSuccess = function (h5ApiCallback) {
-          if(typeof h5ApiCallback == "function")  h5ApiCallback();
-        }.bind(this, runCallback);
-
-        var runFail = function(h5ApiCallback) {
-          if(typeof h5ApiCallback == "function")  h5ApiCallback();
-        }.bind(this, runCallback);
-
-      }else if(runType == "reward") {
-        var runSuccess = function (h5ApiCallback, success) {
-          if(typeof success == "function")        success();
-          if(typeof h5ApiCallback == "function")  h5ApiCallback();
-        }.bind(this, runCallback, opt.success);
-
-        var runFail = function(h5ApiCallback, fail) {
-          if(typeof fail == "function")           fail();
-          if(typeof h5ApiCallback == "function")  h5ApiCallback();
-        }.bind(this, runCallback, opt.fail);
+        }.bind(this);
+        var runFail = runCallback;
+      }
+      else if(runType == "start") {
+        var runSuccess = runCallback;
+        var runFail = runCallback;
+      }
+      else if(runType == "reward") {
+        var runSuccess = function () {
+          if(typeof opt.success === "function") opt.success();
+          runCallback();
+        }.bind(this);
+        var runFail = function() {
+          if(typeof opt.fail === "function") opt.fail();
+          runCallback();
+        }.bind(this);
       }
 
       var runAdType = (runType != "reward") ? "normal" : "reward";
@@ -226,4 +222,20 @@ window.h5Api = new function() {
     }
   }
 
+  this.b64EncodeUnicode = function(str) {
+    // first we use encodeURIComponent to get percent-encoded UTF-8,
+    // then we convert the percent encodings into raw bytes which
+    // can be fed into btoa.
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+        function toSolidBytes(match, p1) {
+            return String.fromCharCode('0x' + p1);
+    }));
+  }
+
+  this.b64DecodeUnicode = function(str) {
+    // Going backwards: from bytestream, to percent-encoding, to original string.
+    return decodeURIComponent(atob(str).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+  }
 }

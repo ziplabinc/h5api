@@ -8,8 +8,8 @@ h5Api.Token = new function() {
 
         this._descText = {
             success: [
-                "<div>플레이 보상 획득!</div>",
-                "<div><div class='round-box token'>+<span class='amount'></span></div></div>"
+                "<div>플레이 토큰 획득!</div>",
+                "<div><div class='round-box token big ani-css'><div class='hi-token-inline ani-css'></div><div class='amount ani-css'></div></div></div>"
             ],
             not_login: [
                 "<div>토큰<div class='hi-token-inline'></div>은</div>",
@@ -17,9 +17,8 @@ h5Api.Token = new function() {
                 "<div>획득됩니다.</div>"
             ],
             body: [
-                "토큰을 획득해서",
-                "<span class='highlight'>랭킹전</span>에 참여하세요!",
-                "<span class='small'>(정식 오픈 시 랭킹전 시작)</span>"
+                "<div>토큰을 획득해서<br><span class='highlight'>랭킹전</span>에 참여하세요!</div>",
+                "<div class='have-token small'><span>소지 토큰 : </span><div class='hi-token-inline'></div><span class='amount'></span></div>"
             ]
         };
         this.testVal = {
@@ -50,7 +49,7 @@ h5Api.Token = new function() {
         
         var bodyText = document.createElement("div");
         bodyText.classList.add("hi-text-body");
-        bodyText.innerHTML = this._descText.body.join("<br>");
+        bodyText.innerHTML = this._descText.body.join("");
         this.DOM.mainPopup.appendChild(bodyText);
         
         var buttonBox = document.createElement("div");
@@ -58,7 +57,6 @@ h5Api.Token = new function() {
         this.DOM.mainPopup.appendChild(buttonBox);
 
         this.DOM.loginBtn = document.createElement("div");
-        this.DOM.loginBtn.classList.add("hi-login");
         this.DOM.loginBtn.classList.add("hi-button");
         this.DOM.loginBtn.innerText = "로그인 하기";
         this.DOM.loginBtn.addEventListener("click", function(e) {
@@ -66,16 +64,20 @@ h5Api.Token = new function() {
         }.bind(this));
         buttonBox.appendChild(this.DOM.loginBtn);
 
-        var submitBtn = document.createElement("div");
-        submitBtn.classList.add("hi-button");
-        submitBtn.innerText = "게임 계속하기";
-        submitBtn.addEventListener("click", function(e) {
+        this.DOM.submitBtn = document.createElement("div");
+        this.DOM.submitBtn.classList.add("hi-button");
+        this.DOM.submitBtn.innerText = "게임 계속하기";
+        this.DOM.submitBtn.addEventListener("click", function(successText) {
+            successText.querySelector(".hi-token-inline").classList.toggle("show-token");
+            successText.querySelector(".round-box.token .amount").classList.toggle("show-token-amount");
+            successText.querySelector(".round-box.token").classList.toggle("show-token-box");
+
             h5Api.style.backScreen.activePopup = null;
 
             if(typeof this.resumeGame == "function")    this.resumeGame();
             if(typeof this.sucsback == "function")      this.sucsback();
-        }.bind(this));
-        buttonBox.appendChild(submitBtn);
+        }.bind(this, this.DOM.successText));
+        buttonBox.appendChild(this.DOM.submitBtn);
 
     }.bind(this)
 
@@ -99,15 +101,18 @@ h5Api.Token = new function() {
                 str += num.substring(point, point + 3); 
                 point += 3; 
             }
-            this.DOM.mainPopup.getElementsByClassName("amount")[0].innerText = str;
+            this.DOM.successText.querySelector(".round-box.token .amount").innerText = "+"+str;
         }
-        
+
         if(data.status == "not_login") {
             this.DOM.successText.style.display = "none";
             this.DOM.notloginText.style.display = "block";
 
             this.DOM.loginBtn.style.display = "block";
             this.DOM.topImage.style.backgroundImage = "url("+h5Api.style.imageURI.bgNotlogin+")";
+            this.DOM.submitBtn.classList.add("deactive");
+
+            this.DOM.mainPopup.querySelector(".have-token").style.display = "none";
         }
         else if(data.status == "success") {
             this.DOM.notloginText.style.display = "none";
@@ -115,6 +120,14 @@ h5Api.Token = new function() {
 
             this.DOM.loginBtn.style.display = "none";
             this.DOM.topImage.style.backgroundImage = "url("+h5Api.style.imageURI.bgSuccess+")";
+            this.DOM.submitBtn.classList.remove("deactive");
+            
+            this.DOM.mainPopup.querySelector(".have-token").style.display = "inline-block";
+            this.DOM.mainPopup.querySelector(".have-token .amount").innerText = ++h5Api.data.remainToken || "-";
+
+            this.DOM.successText.querySelector(".hi-token-inline").classList.toggle("show-token")
+            this.DOM.successText.querySelector(".round-box.token .amount").classList.toggle("show-token-amount")
+            this.DOM.successText.querySelector(".round-box.token").classList.toggle("show-token-box")
         }
 
         h5Api.style.backScreen.activePopup = "token-popup";
