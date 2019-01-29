@@ -238,4 +238,109 @@ window.h5Api = new function() {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
   }
+
+  this.createDOM = function() {
+    if(typeof arguments[0] == "object")   {
+       var opt = arguments[0] || {};
+    }else if(typeof arguments[0] == "string") {
+       var opt = arguments[1] || {};
+       opt.tag = arguments[0];
+    }
+    if(opt.tag === undefined)   console.error("[createDOM] invalid tagName");
+   
+    var outer = document.createElement(opt.tag);
+    delete opt.tag;
+     
+    if(opt.id !== undefined) {
+       outer.id = opt.id;
+       delete opt.id;
+    }
+    
+    // Selector.attributes 처리
+    if(opt.attr !== undefined) {
+       if(opt.attr.constructor.name == "NamedNodeMap") {
+        // element.attributes를 그대로 입력할 경우
+        for(var i=0; i<opt.attr.length; i++) {
+         outer.setAttribute(opt.attr[i].nodeName, opt.attr[i].nodeValue);
+        }
+       }else if(opt.attr.constructor.name == "Object" || Array.isArray(opt.attr)){
+        // Object, Array 등 사용자 지정 attrubute일 경우
+        if(!Array.isArray(opt.attr))  opt.attr = [opt.attr];
+        for(var i=0; i<opt.attr.length; i++) {
+         var attName = opt.attr[i].nodeName || opt.attr[i].key;
+         var attVal = opt.attr[i].nodeValue || opt.attr[i].val || "";
+    
+         if(attName !== undefined) {
+          outer.setAttribute(attName, attVal);
+         }else console.error("[createDOM] invalid attribute nodeName or key");
+        }
+      }else {
+       console.error("[createDOM] invalid attribute option");
+      }
+      delete opt.attr;
+    }
+     
+    // Selector.class 처리
+    if(opt.class !== undefined) {
+       // Array일 경우와, Selector.classList의 경우 모두 체크
+       if(Array.isArray(opt.class) || opt.class.constructor.name == "DOMTokenList") {
+        for(var i=0; i<opt.class.length; i++) {
+         outer.classList.add(opt.class[i]);
+        }
+       }else if(typeof opt.class == "string") {
+        outer.classList.add(opt.class);
+       }else {
+        console.error("[createDOM] invalid class option");
+       }
+       delete opt.class;
+    }
+    
+    // Selector.value 처리
+    if(opt.value !== undefined) {
+       if(opt.tag == "input")   outer.value = opt.value;
+       else               outer.innerHTML = opt.value.toString().replace(/ /gi,"&nbsp;");
+       delete opt.value;
+    }
+
+    // Selector.innerHTML 처리
+    if(opt.innerHTML !== undefined) {
+      outer.innerHTML = opt.innerHTML.toString();
+      delete opt.innerHTML;
+    }
+   
+    // Selector.style 처리
+    if(typeof opt.style === "object") {
+       for(var key in opt.style) outer.style[key] = opt.style[key];
+       delete opt.style;
+    }else if(typeof opt.style === "string") {
+       outer.setAttribute("style", opt.style);
+    }else if(opt.style !== undefined) {
+       console.error("[createDOM] invalid class option");
+    }
+     
+    // Selector.child 처리
+    if(opt.child !== undefined) {
+       if(!Array.isArray(opt.child))    opt.child = [opt.child];
+       for(var i=0; i<opt.child.length; i++) {
+        if(opt.child[i].constructor.name == "Object") {
+         outer.appendChild(this.createDOM(opt.child[i]));
+        }else {
+         try {
+          outer.appendChild(opt.child[i]);   
+         } catch (e) {
+          console.log(e);
+          if(opt.child[i] !== undefined)   console.error("[createDOM] invalid child option");
+         }
+        }
+       }
+       delete opt.child;
+    }
+   
+    // 나머지 기타 어트리븃 처리
+    for(var key in opt) {
+       outer.setAttribute(key, opt[key]);
+    }
+     
+    return outer;
+  }
 }
