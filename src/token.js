@@ -16,7 +16,9 @@ h5Api.Token = new function() {
             body: [
                 "토큰을 획득해서",
                 "<span class='highlight'>랭킹전</span>에 참여하세요!"
-            ]
+            ],
+            submit: "게임 계속하기",
+            login: "로그인 하기"
         };
         this.testVal = {
             status : ["fail", "success", "not_login"],
@@ -33,16 +35,17 @@ h5Api.Token = new function() {
                 ]}}
             ]
         });
+        this.DOM.successText.tDOM = this.DOM.successText.children[0];
         this.DOM.notloginText = h5Api.createDOM({
             tag: "div", class: ["hi-text-fail", "hi-text-header"], innerHTML: this._descText.not_login.join("<br>")
         });
 
-        this.DOM.loginBtn = h5Api.createDOM({ tag: "div", class: "hi-button", value: "로그인 하기" });
+        this.DOM.loginBtn = h5Api.createDOM({ tag: "div", class: "hi-button", value: this._descText.login });
         this.DOM.loginBtn.addEventListener("click", function(e) {
             parent.parent.location.href="/access?mode=login";
         }.bind(this));
 
-        this.DOM.submitBtn = h5Api.createDOM({ tag: "div", class: "hi-button", value: "게임 계속하기" });
+        this.DOM.submitBtn = h5Api.createDOM({ tag: "div", class: "hi-button", value: this._descText.submit });
         this.DOM.submitBtn.addEventListener("click", function(successText) {
             successText.querySelector(".hi-token-inline").classList.toggle("show-token");
             successText.querySelector(".round-box.token .amount").classList.toggle("show-token-amount");
@@ -72,6 +75,8 @@ h5Api.Token = new function() {
             ]
         });
         h5Api.style.backScreen.appendChild(this.DOM.mainPopup);
+
+        return this;
     }.bind(this)
 
 
@@ -95,6 +100,7 @@ h5Api.Token = new function() {
                 point += 3; 
             }
             this.DOM.successText.querySelector(".round-box.token .amount").innerText = "+"+str;
+            h5Api.data.remainToken += data.amount;
         }
 
         if(data.status == "not_login") {
@@ -110,19 +116,19 @@ h5Api.Token = new function() {
         else if(data.status == "success") {
             this.DOM.notloginText.style.display = "none";
             this.DOM.successText.style.display = "block";
-            
-            if(data.message !== undefined) {
-                this.DOM.successText.children[0].innerHTML = data.message;
-            }else {
-                this.DOM.successText.children[0].innerHTML = this._descText.success.join("<br>");
-            }
+
+            if(data.message === undefined)  data.message = this._descText.success.join("<br>");
+            this.DOM.successText.tDOM.innerHTML = data.message;
+                
+            if(data.submitText === undefined)   data.submitText = this._descText.submit;
+            this.DOM.submitBtn.innerHTML = data.submitText;
 
             this.DOM.loginBtn.style.display = "none";
             this.DOM.topImage.style.backgroundImage = "url("+h5Api.style.imageURI.bgSuccess+")";
             this.DOM.submitBtn.classList.remove("deactive");
             
             this.DOM.mainPopup.querySelector(".have-token").style.display = "inline-block";
-            this.DOM.mainPopup.querySelector(".have-token .amount").innerText = ++h5Api.data.remainToken || "-";
+            this.DOM.mainPopup.querySelector(".have-token .amount").innerText = h5Api.data.remainToken || "-";
 
             this.DOM.successText.querySelector(".hi-token-inline").classList.toggle("show-token")
             this.DOM.successText.querySelector(".round-box.token .amount").classList.toggle("show-token-amount")
