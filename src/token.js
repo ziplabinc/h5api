@@ -75,7 +75,7 @@ h5Api.Token = new function() {
     }.bind(this)
 
 
-    this._openPopup = function(data) { // console.log(data);
+    this.openPopup = function(data) { // console.log(data);
         if(data.status == "fail") {
             if(typeof this.failback == "function") this.failback();
             return;
@@ -110,6 +110,12 @@ h5Api.Token = new function() {
         else if(data.status == "success") {
             this.DOM.notloginText.style.display = "none";
             this.DOM.successText.style.display = "block";
+            
+            if(data.message !== undefined) {
+                this.DOM.successText.children[0].innerHTML = data.message;
+            }else {
+                this.DOM.successText.children[0].innerHTML = this._descText.success.join("<br>");
+            }
 
             this.DOM.loginBtn.style.display = "none";
             this.DOM.topImage.style.backgroundImage = "url("+h5Api.style.imageURI.bgSuccess+")";
@@ -148,7 +154,7 @@ h5Api.Token = new function() {
                 amount: this.testVal.amount[ Math.floor(Math.random()*this.testVal.amount.length) ]
             }
             console.log(testRtn);
-            this._openPopup(testRtn);
+            this.openPopup(testRtn);
         }else {
             var xhr = new XMLHttpRequest();
             // xhr.responseType = "json"; // It is not working in IE...
@@ -158,7 +164,7 @@ h5Api.Token = new function() {
                 if (xhr.readyState === 4) { // DONE
                     if (xhr.status === 200) { // OK
                         try {
-                            this._openPopup(JSON.parse(xhr.response));
+                            this.openPopup(JSON.parse(xhr.response));
                         } catch (error) {
                             var errCode = "h5Api.Token";
                             var message = "response parse error: "+h5Api.b64EncodeUnicode(xhr.response)+" ("+xhr.responseURL+")";
