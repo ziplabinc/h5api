@@ -164,10 +164,24 @@ h5Api.Token = new function() {
             xhr.onreadystatechange = function (e) {
                 if (xhr.readyState === 4) { // DONE
                     if (xhr.status === 200) { // OK
-                        this._openPopup(JSON.parse(xhr.response));
+                        try {
+                            this._openPopup(JSON.parse(xhr.response));
+                        } catch (error) {
+                            var errCode = "h5Api.Token";
+                            var message = "response parse error: "+h5Api.b64EncodeUnicode(xhr.response)+" ("+xhr.responseURL+")";
+                        }
                     }else { // ETC(404, 503 ..)
-                        console.error("[h5Api.Token] Token xhrCall error: "+xhr.status+" "+xhr.statusText+" ("+xhr.responseURL+")");
+                        var errCode = "h5Api.Token";
+                        var message = "xhrCall error: "+xhr.status+" "+xhr.statusText+" ("+xhr.responseURL+")";
+                    }
+                    if(errCode) {
+                        var errXhr = new XMLHttpRequest();
+                        errXhr.open("POST", "https://api.hifivegame.com/error.php");
+                        errXhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                        errXhr.send("code="+errCode+"&message="+message);
+    
                         if(typeof this.failback == "function") this.failback();
+                        console.error("["+errCode+"] "+message);
                     }
                 }
             }.bind(this);
