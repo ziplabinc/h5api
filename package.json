@@ -1,6 +1,6 @@
 {
   "name": "h5api",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "H5game Platform Game API",
   "main": "src/0_index.js",
   "scripts": {},

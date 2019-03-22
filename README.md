@@ -5,8 +5,6 @@
 광고 및 포인트, 랭킹 기능이 포함된 ZIP-LAB H5game Platform 게임 API입니다.
 
 
-Current version: v2.0.8
-
 Installation
 -------------
 - 게임 내 메인 html file의 head Tag 내에서 h5api 모듈 파일을 로드합니다.
@@ -19,7 +17,7 @@ Installation
 
 Testing
 -------------
-- H5game Platform 상에 업로드된 게임이 아니라면 모든 기능은 Test mode로 구동됩니다.
+- h5Api.init 실행 시 runMode 설정을 통해 테스트 모드(h5Api.MODE.TEST)로 구동 가능합니다.
 
 ***
 
@@ -38,6 +36,16 @@ Testing
     * 풀슬롯 : 광고 수급 또는 브라우저 이슈로 인해, 일반형 또는 보상형 광고 재생이 불가능할 때 사용. (포인트 제공 여부는 대체되는 광고의 유형에 종속됨)
 - API 설정 작업은 크게 *초기화, 실행* 으로 이루어집니다.
 
+h5Api.MODE
+-------------
+- h5Api에서 사용 가능한 모드 프리셋입니다.
+    Name                | Type      | Value | Description
+    -----               | -----     | ----- | -----
+    h5Api.MODE.TEST     | Number    | 0     | 테스트 수행 모드.
+    h5Api.MODE.ALL      | Number    | 1     | 모든 기능 사용 가능한 모드. 플랫폼 게임에서 사용됨.
+    h5Api.MODE.AD       | Number    | 2     | 광고 기능만 사용 가능한 모드. 주로 비-플랫폼 게임에서 광고를 호출하기 위해 사용됨.
+    h5Api.MODE.TOKEN    | Number    | 3     | 토큰 팝업 기능만 사용 가능한 모드. 주로 플랫폼 내부에서 사용됨.
+
 h5Api.init
 -------------
 - 광고 생성, 광고 재생 시 호출할 pause/resume 함수 선언, 랭킹 시스템 호출 등의 초기화를 수행합니다.
@@ -47,13 +55,13 @@ h5Api.init
     Name            | Type      | Default   | Description
     -----           | -----     | -----     | -----
     opt             | Object    | {}        | key/value 오브젝트로 이루어진 h5Api.init 옵션 파라미터
+    opt.runMode     | String    | "ALL"     | 모드 설정값
     opt.useReward   | Boolean   | false     | 보상형 광고 사용 여부
     opt.isRank      | Boolean   | false     | 랭킹 시스템의 사용 여부 (사용 시 플랫폼사와의 사전 협의 필요)
     opt.pauseGame   | Function  | -         | 광고 실행 시 동작해야 하는 게임 정지, 사운드 음소거 함수
     opt.resumeGame  | Function  | -         | 광고 실행 성공/실패 시 동작해야 하는 게임 재개, 사운드 재생 함수
 
     ```
-    <script>
     h5Api.init({
         useReward: true, // 보상형 광고 사용
         pauseGame: function() {
@@ -76,7 +84,6 @@ h5Api.init
             WG.pause = false;
         }
     });
-    </script>
     ```
 
 h5Api.run
@@ -98,6 +105,13 @@ h5Api.run
     // 일반형 광고 실행. 초기화 때 선언한 pauseGame, resumeGame 함수를 실행합니다.
     h5Api.run();
 
+    // 일반형 광고 실행. 광고 실행 후 콜백 함수를 실행합니다.
+    h5Api.run({
+        callback: function() {
+            광고 실행 성공/실패과 무관하게 실행되는 콜백입니다.
+        }
+    });
+
     // 보상형 광고 실행. 초기화 때 선언한 pauseGame, resumeGame 함수를 실행합니다.
     h5Api.run({
         type: "reward",
@@ -115,6 +129,48 @@ h5Api.run
         fail: function() {
             // 보상형 광고 실행 실패 시 실행되는 콜백입니다.
         }
+    });
+    ```
+
+h5Api.setAdcode
+-------------
+- 비플랫폼 게임의 경우 다른 광고 코드를 삽입해야 하는 경우가 있습니다. 이 경우 해당 메소드를 실행하여 adCode를 재설정합니다.
+
+- h5Api.setAdcode( codeCallback, codeUrl )
+    Name            | Type          | Default   | Description
+    -----           | -----         | -----     | -----
+    codeCallback    | Function      | -         | codeUrl 삽입 후 실행할 콜백 함수
+    codeUrl         | String|Object | null      | 광고 코드 오브젝트 또는 코드를 호출할 URL
+
+    ```
+    h5Api.setAdcode(function (json) { // no Json
+        h5Api.data.cn = "ziplab";
+        h5Api.init({
+            runMode: h5Api.MODE.AD,
+            useReward: true, // 보상형 광고 사용
+            pauseGame: function () {
+                // 게임 정지 및 게임 사운드 음소거 로직이 삽입되는 함수입니다.
+            },
+            resumeGame: function () {
+                // 게임 재개 및 게임 사운드 재생 로직이 삽입되는 함수입니다.
+            });
+        window.startGame();
+    },
+    { // 아래 광고코드 오브젝트는 아래의 형식을 지켜야 합니다.
+        "url": "/",
+        "cn": ["ziplab"], // 채널 네임
+        "ad": {
+            "normal": { // 일반 광고, 아래 adTime 사용함
+                "ziplab": "https://googleads.g.doubleclick.net/..."
+            },
+            "reward": { // 보상 광고, adTime이 1초로 고정됨
+                "ziplab": "https://googleads.g.doubleclick.net/..."
+            },
+            "fullslot": { // 일반/보상 광고 로드 실패 시 호출하는 풀슬롯 광고
+                "ziplab": "https://googleads.g.doubleclick.net/..."
+            }
+        },
+        "adTime": 60000 // 다음 광고를 호출 가능한 최소 시간. adTime만큼 시간이 지나지 않으면 광고를 실행해도 실행되지 않고 콜백 함수를 호출합니다.
     });
     ```
 ***

@@ -40,37 +40,65 @@ window.h5Api = new function() {
 
   // Adcode 관련 초기화
   this.adList = {};
+  this.adLoadList = [
+    "//s0.2mdn.net/instream/html5/ima3.js",
+    "//api.hifivegame.com/adcode.php?callback=h5Api._adcodeCallback"
+  ];
   this._adcodeCallback = function(json) { this.adcode = json; };
-  this._getAdcode = function(codeCallback, codeUrl) {
-    if(codeCallback === undefined)  console.error("[h5Api] getCode param(codeCallback) is undefined");
-    else {
+
+  // this.setAdcode(Fn, String) : 다른 url adCode 호출하고 Fn 실행
+  // this.setAdcode(Fn, Object) : adCode를 hard 삽입하고 Fn 실행
+  this.setAdcode = this._getAdcode = function(codeCallback, codeUrl) {
+    if(codeCallback === undefined) {
+      console.error("[h5Api] getCode param(codeCallback) is undefined");
+      return;
+    }
+
+    
+    if(codeUrl.constructor === String || codeUrl.constructor === undefined) { // 레거시 지원 : codeUrl == undefined
+      this.adLoadList[1] = codeUrl || this.adLoadList[1];
+
       // _getAdcode 사용 시 _adcodeCallback 재선언
       this._adcodeCallback = function(callback, json) {
         this.adcode = json;
         callback(json);
       }.bind(this, codeCallback);
     }
-    if(codeUrl === undefined) {
-      codeUrl = '//api.hifivegame.com/adcode.php?callback=h5Api._adcodeCallback';
+    else if(codeUrl.constructor === Object) {
+      this.adLoadList.splice(1, 1);
+      this.adcode = codeUrl;
+      codeCallback(codeUrl);
     }
-    var loadArr = ["//s0.2mdn.net/instream/html5/ima3.js", codeUrl];
-
-    this._loadScript(loadArr, function(){});
   }
+
+  // h5Api MODE 추가
+  this.MODE = {};
+  Object.defineProperties(this.MODE, {
+    'TEST':  { value: 0, enumerable: true },
+    'ALL':   { value: 1, enumerable: true },
+    'AD':    { value: 2, enumerable: true },
+    'TOKEN': { value: 3, enumerable: true },
+  });
+  Object.defineProperty(this.MODE, 'allow', {
+    value: {
+      token: [this.MODE.TEST, this.MODE.ALL, this.MODE.TOKEN],
+      rank: [this.MODE.TEST, this.MODE.ALL],
+      ad: [this.MODE.TEST, this.MODE.ALL, this.MODE.AD],
+    }
+  });
 
   // h5Api.data 게임정보 초기화
   try {
     throw JSON.stringify(window.parent.gameData);
   } catch(e) {
-    if(e === undefined || e.name == "TypeError") {
+    if(e === undefined || ["TypeError", "SecurityError"].indexOf(e.name) !== -1) {
+      // SecurityError: Platform in iframe
       // console.error("[h5Api.run] GameData was undefined or TypeError. Abort!");
       // return;
       this.data = {};
-      this.testMode = true;
-      console.warn("[h5Api] Settings not found. Test mode is activated."); // 테스트모드 warn 세팅
+      this.runMode = this.MODE.TOKEN;
     }else {
       this.data = JSON.parse(e);
-      this.testMode = false;
     }
   }
   if(this.data.gn === undefined)          this.data.gn = "0";
@@ -105,47 +133,56 @@ window.h5Api = new function() {
 
     if(this._isInit === "domReady") {
       console.log("[h5Api] Initializing...");
-      // h5Api 초기화
-      this.Token.init();
 
-      var loadArr = [
-        "//api.hifivegame.com/adcode.php?callback=h5Api._adcodeCallback",
-        "//s0.2mdn.net/instream/html5/ima3.js"
-      ];
+      // runMode 설정 : 기본값 ALL
+      this.runMode = (opt.runMode === undefined) ? this.MODE.ALL : opt.runMode;
+      if(this.runMode === this.MODE.TEST) {
+        console.warn("[h5Api] Settings not found. Test mode is activated.");
+        if(opt.gameData !== undefined) {
+          this.data = Object.assign({}, this.data, opt.gameData);
+        }
+      }
 
-      // 플랫폼의 isRank 여부와 게임내 isRank 모두 체크
-      // if(this.data.isRank && opt.isRank === true) loadArr.push("//api.hifivegame.com/rank.php?gd="+this.data.gd);
-      if(this.data.isRank && opt.isRank === true) this.Rank.init();
+      if(this.MODE.allow.token.indexOf(this.runMode) !== -1) {
+        this.Token.init();
+      }
+      
+      if(this.MODE.allow.rank.indexOf(this.runMode) !== -1) {
+        // 플랫폼의 isRank 여부와 게임내 isRank 모두 체크
+        if(this.data.isRank && opt.isRank === true) this.Rank.init();
+      }
 
-      this._loadScript(loadArr, function(useReward) {
-        // data.cn 보정
-        if(this.adcode.cn.indexOf(this.data.cn) === -1)  this.data.cn = "test";
+      if(this.MODE.allow.ad.indexOf(this.runMode) !== -1) {
+        this._loadScript(this.adLoadList, function(useReward) {
+          // data.cn 보정
+          if(this.adcode.cn.indexOf(this.data.cn) === -1)  this.data.cn = "test";
 
-        this.adList.normal = new this.Ad(
-          this.adcode.ad.normal[h5Api.data.cn].replace("[gn]", this.data.gn).replace("[adc]", this.data.adc),
-          {
-            title: this.data.gt,
-            image: this.data.gi,
-            time : this.adcode.adTime,
-          }
-        );
-        
-        if(useReward === true) {
-          this.adList.reward = new this.Ad(
-            this.adcode.ad.reward[h5Api.data.cn].replace("[gn]", this.data.gn).replace("[adc]", this.data.adc),
+          this.adList.normal = new this.Ad(
+            this.adcode.ad.normal[h5Api.data.cn].replace("[gn]", this.data.gn).replace("[adc]", this.data.adc),
             {
               title: this.data.gt,
               image: this.data.gi,
-              time : 1,
+              time : this.adcode.adTime,
             }
           );
-        }
+          
+          if(useReward === true) {
+            this.adList.reward = new this.Ad(
+              this.adcode.ad.reward[h5Api.data.cn].replace("[gn]", this.data.gn).replace("[adc]", this.data.adc),
+              {
+                title: this.data.gt,
+                image: this.data.gi,
+                time : 1,
+              }
+            );
+          }
 
-        // h5Api 관련 처리 끝낸 후 기존 window.onload 호출
-        // if(typeof h5Api._prevOnload == "function")  h5Api._prevOnload();
+          // h5Api 관련 처리 끝낸 후 기존 window.onload 호출
+          // if(typeof h5Api._prevOnload == "function")  h5Api._prevOnload();
 
-        this._isInit = "complete";
-      }.bind(this, opt.useReward));
+          this._isInit = "complete";
+        }.bind(this, opt.useReward));
+      }
 
     }else {
       setTimeout(function() {
@@ -169,22 +206,26 @@ window.h5Api = new function() {
     else                                        var runCallback = this.callback;
     
     // 플랫폼의 isRank가 1일 때 광고 차단
-    if(this.data.isRank && !this.testMode) {
+    if(this.MODE.allow.rank.indexOf(this.runMode) !== -1 && this.data.isRank) {
       runCallback();
       return;
     }
     
     if(this._isInit === "complete") {
       if(runType == "normal") {
-        var runSuccess = function () {
-          this.Token.call({
-            env: this.data.gd,
-            pauseGame: runPauseGame,
-            resumeGame: runResumeGame,
-            success: runCallback,
-            fail: runCallback
-          });
-        }.bind(this);
+        if(this.MODE.allow.token.indexOf(this.runMode) !== -1) {
+          var runSuccess = function () {
+            this.Token.call({
+              env: this.data.gd,
+              pauseGame: runPauseGame,
+              resumeGame: runResumeGame,
+              success: runCallback,
+              fail: runCallback
+            });
+          }.bind(this);
+        }else {
+          var runSuccess = runCallback;
+        }
         var runFail = runCallback;
       }
       else if(runType == "start") {

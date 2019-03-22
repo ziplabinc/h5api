@@ -74,6 +74,9 @@ h5Api.Token = new function() {
                 { tag: "div", class: "hi-button-box", child: [this.DOM.loginBtn, this.DOM.submitBtn] }
             ]
         });
+        if(window.innerHeight > 1200) { // 게임조선 등 MODE.TOKEN, iframe의 대응
+            this.DOM.mainPopup.style.top = "20%";
+        }
         h5Api.style.backScreen.appendChild(this.DOM.mainPopup);
 
         return this;
