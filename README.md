@@ -5,8 +5,6 @@
 광고 및 포인트, 랭킹 기능이 포함된 ZIP-LAB H5game Platform 게임 API입니다.
 
 
-Current version: v2.0.8
-
 Installation
 -------------
 - 게임 내 메인 html file의 head Tag 내에서 h5api 모듈 파일을 로드합니다.
@@ -53,7 +51,6 @@ h5Api.init
     opt.resumeGame  | Function  | -         | 광고 실행 성공/실패 시 동작해야 하는 게임 재개, 사운드 재생 함수
 
     ```
-    <script>
     h5Api.init({
         useReward: true, // 보상형 광고 사용
         pauseGame: function() {
@@ -76,7 +73,6 @@ h5Api.init
             WG.pause = false;
         }
     });
-    </script>
     ```
 
 h5Api.run
@@ -98,6 +94,13 @@ h5Api.run
     // 일반형 광고 실행. 초기화 때 선언한 pauseGame, resumeGame 함수를 실행합니다.
     h5Api.run();
 
+    // 일반형 광고 실행. 광고 실행 후 콜백 함수를 실행합니다.
+    h5Api.run({
+        callback: function() {
+            광고 실행 성공/실패과 무관하게 실행되는 콜백입니다.
+        }
+    });
+
     // 보상형 광고 실행. 초기화 때 선언한 pauseGame, resumeGame 함수를 실행합니다.
     h5Api.run({
         type: "reward",
@@ -115,6 +118,48 @@ h5Api.run
         fail: function() {
             // 보상형 광고 실행 실패 시 실행되는 콜백입니다.
         }
+    });
+    ```
+
+h5Api.setAdcode
+-------------
+- 비플랫폼 게임의 경우 다른 광고 코드를 삽입해야 하는 경우가 있습니다. 이 경우 해당 메소드를 실행하여 adCode를 재설정합니다.
+
+- h5Api.setAdcode( codeCallback, codeUrl )
+    Name            | Type          | Default   | Description
+    -----           | -----         | -----     | -----
+    codeCallback    | Function      | -         | codeUrl 삽입 후 실행할 콜백 함수
+    codeUrl         | String|Object | null      | 광고 코드 오브젝트 또는 코드를 호출할 URL
+
+    ```
+    h5Api.setAdcode(function (json) { // no Json
+        h5Api.data.cn = "ziplab";
+        h5Api.init({
+            runMode: h5Api.MODE.AD,
+            useReward: true, // 보상형 광고 사용
+            pauseGame: function () {
+                // 게임 정지 및 게임 사운드 음소거 로직이 삽입되는 함수입니다.
+            },
+            resumeGame: function () {
+                // 게임 재개 및 게임 사운드 재생 로직이 삽입되는 함수입니다.
+            });
+        window.startGame();
+    },
+    { // 아래 광고코드 오브젝트는 아래의 형식을 지켜야 합니다.
+        "url": "/",
+        "cn": ["ziplab"], // 채널 네임
+        "ad": {
+            "normal": { // 일반 광고, 아래 adTime 사용함
+                "ziplab": "https://googleads.g.doubleclick.net/..."
+            },
+            "reward": { // 보상 광고, adTime이 1초로 고정됨
+                "ziplab": "https://googleads.g.doubleclick.net/..."
+            },
+            "fullslot": { // 일반/보상 광고 로드 실패 시 호출하는 풀슬롯 광고
+                "ziplab": "https://googleads.g.doubleclick.net/..."
+            }
+        },
+        "adTime": 60000 // 다음 광고를 호출 가능한 최소 시간. adTime만큼 시간이 지나지 않으면 광고를 실행해도 실행되지 않고 콜백 함수를 호출합니다.
     });
     ```
 ***
