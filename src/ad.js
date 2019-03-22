@@ -25,6 +25,8 @@ h5Api.Ad = function (adUrl, opt) {
     this.adPlayCount = 0;
     this.lastAdTime = this.adAgainTime;
     
+    this.canUseAdPlayImage = false;
+    
     this._initAdsense();
 };
 
@@ -58,6 +60,7 @@ h5Api.Ad.prototype._initAdsense = function () {
         
         this.adPlayImage = document.createElement('div'); // img
         this.adPlayImage.id = "adPlayImage";
+        this.adPlayImage.addEventListener("click", this._ad);
         adMobileCover.appendChild(this.adPlayImage);
     }
 
@@ -84,6 +87,15 @@ h5Api.Ad.prototype._initAdsense = function () {
     this.adContainer.style.width = window.innerWidth+"px";
     this.adContainer.style.height = window.innerHeight+"px";
     this.adMainContainer.appendChild(this.adContainer);
+
+    this.adRemainSecDOM = h5Api.createDOM({ tag: "span", id: "remainSec" });
+    this.adBackupWrap = h5Api.createDOM(
+        { tag: "div", id: "adBackupWrap", child: [
+            { tag: "div", value: "Loading... ", child: this.adRemainSecDOM },
+            { tag: "div", id: "pacman", class: "loading-icon", innerHTML: h5Api.style.imageURI.pacmanSvg }
+        ]}
+    );
+    this.adContainer.appendChild(this.adBackupWrap);
 
     google.ima.settings.setVpaidMode(google.ima.ImaSdkSettings.VpaidMode.ENABLED);
     // google.ima.settings.setVpaidMode(google.ima.ImaSdkSettings.VpaidMode.INSECURE);
@@ -140,6 +152,7 @@ h5Api.Ad.prototype.run = function (opt) {
     adsRequest.linearAdSlotWidth = window.innerWidth;
     adsRequest.linearAdSlotHeight = window.innerHeight;
 
+    adsRequest.forceNonLinearFullSlot = true;
     adsRequest.nonLinearAdSlotWidth = window.innerWidth;
     adsRequest.nonLinearAdSlotHeight = window.innerHeight;
     adsRequest.setAdWillAutoPlay(true);
@@ -150,18 +163,31 @@ h5Api.Ad.prototype.run = function (opt) {
     return true;
 };
   
-h5Api.Ad.prototype._ad = function () {
+h5Api.Ad.prototype._ad = function (e) {
     if (h5Api.isMobile) {
-      this.adWrapper.style.display = "none";
-      this.adMainContainer.style.backgroundColor = "black";
+        var self = null;
+        var rtn = Object.keys(h5Api.adList).some(function(adType) {
+            if(h5Api.adList[adType].canUseAdPlayImage) {
+                self = h5Api.adList[adType];
+            }
+            return h5Api.adList[adType].canUseAdPlayImage;
+        }.bind(this));
+        if(!rtn) return;
+
+        self.canUseAdPlayImage = false;
+        
+        self.adWrapper.style.display = "none";
+        self.adMainContainer.style.backgroundColor = "black";
+    }else {
+        var self = this;
     }
     try {
-      this.adsManager.init(window.innerWidth, window.innerHeight, google.ima.ViewMode.NORMAL);
-      this.adsManager.start();
-      this.adPlayCount++;
+        self.adsManager.init(window.innerWidth, window.innerHeight, google.ima.ViewMode.NORMAL);
+        self.adsManager.start();
+        self.adPlayCount++;
     } catch (adError) {
-      console.error("[h5Api.Ad] adsManager.start ErrorCode "+adErrorEvent.h.h+" : "+adErrorEvent.h.l);
-      this._resumeAfterAd(false);
+        console.error("[h5Api.Ad] adsManager.start ErrorCode "+adError.h.h+" : "+adError.h.l);
+        self._resumeAfterAd(false);
     }
   };
   
@@ -190,7 +216,8 @@ h5Api.Ad.prototype._onAdsManagerLoaded = function(adsManagerLoadedEvent) {
         { evt: google.ima.AdEvent.Type.LOADED,                    fnc: this._onAdEvent },
         { evt: google.ima.AdEvent.Type.STARTED,                   fnc: this._onAdEvent },
         { evt: google.ima.AdEvent.Type.COMPLETE,                  fnc: this._onAdEvent },
-        { evt: google.ima.AdEvent.Type.CLICK,                     fnc: this._onAdEvent }
+        { evt: google.ima.AdEvent.Type.CLICK,                     fnc: this._onAdEvent },
+        { evt: google.ima.AdEvent.Type.SKIPPABLE_STATE_CHANGED,   fnc: this._onAdEvent },
     ]
     events.forEach(function(item,idx,arr) {
         this.adsManager.addEventListener(item.evt, item.fnc.bind(this));
@@ -201,41 +228,56 @@ h5Api.Ad.prototype._onAdsManagerLoaded = function(adsManagerLoadedEvent) {
         this._ad();
     else {
         // adsManager 로드 후 버튼 생성해야 버튼 뜨자마자 클릭해도 문제 없음.
-        this.adPlayImage.addEventListener("click", this._ad.bind(this));
+        this.canUseAdPlayImage = true;
         this.adPlayImage.style.opacity = 1;
     }
 };
   
 h5Api.Ad.prototype._onAdEvent = function(adEvent) {
     var ad = adEvent.getAd();
+
     switch (adEvent.type) {
         case google.ima.AdEvent.Type.LOADED:
             if (!ad.isLinear()) {;} // 광고 실패 혹은 끝?
             break;
         case google.ima.AdEvent.Type.STARTED:
             if (ad.isLinear()) {
-                this.intervalTimer = setInterval(function () {
+                this.adRemainSecDOM.innerText = parseInt(this.adsManager.getRemainingTime());
+
+                this._intervalTimer = setInterval(function () {
                     var remainingTime = this.adsManager.getRemainingTime();
+                    this.adRemainSecDOM.innerText = (remainingTime > 1) ? parseInt(remainingTime) : 0;
+                    
+                    if(remainingTime < 1) {
+                        console.log("[h5Api.Ad] remainingTime to Ad is expired!");
+                        this._forceCloseAd();
+                    }
                 }.bind(this), 300); // every 300ms
+            }else {
             }
+            break;
+        case google.ima.AdEvent.Type.SKIPPABLE_STATE_CHANGED:
             break;
         case google.ima.AdEvent.Type.COMPLETE:
         case google.ima.AdEvent.Type.ALL_ADS_COMPLETED:
-        case google.ima.AdEvent.Type.SKIPPED:
+        // case google.ima.AdEvent.Type.SKIPPED: // forceNonLinearFullSlot=true 이후 USER_CLOSE와 같이 발생함.
         case google.ima.AdEvent.Type.USER_CLOSE:
-            if (ad.isLinear())  clearInterval(this.intervalTimer);
-            
-            this.adsManager.destroy();
-
-            this._resumeAfterAd(true);
+            this._forceCloseAd();
+            break;
+        case google.ima.AdEvent.Type.CLICK:
             break;
     }
 };
 
 h5Api.Ad.prototype._forceOpenCover = function() {
-    this.adPlayImage.addEventListener("click", this._ad.bind(this));
     this.adPlayImage.style.opacity = 1;
     this.adWrapper.style.display = "block";
+}
+h5Api.Ad.prototype._forceCloseAd = function(ad) {
+    clearInterval(this._intervalTimer);
+    delete this._intervalTimer;
+    
+    this._resumeAfterAd(true);
 }
 h5Api.Ad.prototype._resumeAfterAd = function(isSuccess) {
 
@@ -245,7 +287,6 @@ h5Api.Ad.prototype._resumeAfterAd = function(isSuccess) {
 
     // 광고 뷰 관련 초기화
     if (h5Api.isMobile) {
-        this.adPlayImage.removeEventListener("click", this._ad);
         this.adPlayImage.style.opacity = 0;
         this.adWrapper.style.display = "none";
     }
@@ -258,11 +299,14 @@ h5Api.Ad.prototype._resumeAfterAd = function(isSuccess) {
         this.adVideo.style.display = "block";
         delete this._originAdUrl;
     }
+    this.adsManager.destroy();
+    delete this.adsManager;
 }
 
 h5Api.Ad.prototype._onAdError = function(adErrorEvent) {
     console.warn("[h5Api.Ad] ErrorCode "+adErrorEvent.h.h+" : "+adErrorEvent.h.l);
     
+    // adsManager의 Error일 때 해당함
     if (this.adsManager !== undefined)  this.adsManager.destroy();
 
     // 풀슬롯이 아닌 경우, 재도전
