@@ -58,6 +58,7 @@ h5Api.Ad.prototype._initAdsense = function () {
         
         this.adPlayImage = document.createElement('div'); // img
         this.adPlayImage.id = "adPlayImage";
+        this.adPlayImage.addEventListener("click", this._ad);
         adMobileCover.appendChild(this.adPlayImage);
     }
 
@@ -140,6 +141,7 @@ h5Api.Ad.prototype.run = function (opt) {
     adsRequest.linearAdSlotWidth = window.innerWidth;
     adsRequest.linearAdSlotHeight = window.innerHeight;
 
+    adsRequest.forceNonLinearFullSlot = true;
     adsRequest.nonLinearAdSlotWidth = window.innerWidth;
     adsRequest.nonLinearAdSlotHeight = window.innerHeight;
     adsRequest.setAdWillAutoPlay(true);
@@ -190,7 +192,8 @@ h5Api.Ad.prototype._onAdsManagerLoaded = function(adsManagerLoadedEvent) {
         { evt: google.ima.AdEvent.Type.LOADED,                    fnc: this._onAdEvent },
         { evt: google.ima.AdEvent.Type.STARTED,                   fnc: this._onAdEvent },
         { evt: google.ima.AdEvent.Type.COMPLETE,                  fnc: this._onAdEvent },
-        { evt: google.ima.AdEvent.Type.CLICK,                     fnc: this._onAdEvent }
+        { evt: google.ima.AdEvent.Type.CLICK,                     fnc: this._onAdEvent },
+        { evt: google.ima.AdEvent.Type.SKIPPABLE_STATE_CHANGED,   fnc: this._onAdEvent },
     ]
     events.forEach(function(item,idx,arr) {
         this.adsManager.addEventListener(item.evt, item.fnc.bind(this));
@@ -201,13 +204,13 @@ h5Api.Ad.prototype._onAdsManagerLoaded = function(adsManagerLoadedEvent) {
         this._ad();
     else {
         // adsManager 로드 후 버튼 생성해야 버튼 뜨자마자 클릭해도 문제 없음.
-        this.adPlayImage.addEventListener("click", this._ad.bind(this));
         this.adPlayImage.style.opacity = 1;
     }
 };
   
 h5Api.Ad.prototype._onAdEvent = function(adEvent) {
     var ad = adEvent.getAd();
+
     switch (adEvent.type) {
         case google.ima.AdEvent.Type.LOADED:
             if (!ad.isLinear()) {;} // 광고 실패 혹은 끝?
@@ -219,21 +222,20 @@ h5Api.Ad.prototype._onAdEvent = function(adEvent) {
                 }.bind(this), 300); // every 300ms
             }
             break;
+        case google.ima.AdEvent.Type.SKIPPABLE_STATE_CHANGED:
+            break;
         case google.ima.AdEvent.Type.COMPLETE:
         case google.ima.AdEvent.Type.ALL_ADS_COMPLETED:
-        case google.ima.AdEvent.Type.SKIPPED:
+        // case google.ima.AdEvent.Type.SKIPPED: // forceNonLinearFullSlot=true 이후 USER_CLOSE와 같이 발생함.
         case google.ima.AdEvent.Type.USER_CLOSE:
-            if (ad.isLinear())  clearInterval(this.intervalTimer);
-            
-            this.adsManager.destroy();
-
-            this._resumeAfterAd(true);
+            this._forceCloseAd();
+            break;
+        case google.ima.AdEvent.Type.CLICK:
             break;
     }
 };
 
 h5Api.Ad.prototype._forceOpenCover = function() {
-    this.adPlayImage.addEventListener("click", this._ad.bind(this));
     this.adPlayImage.style.opacity = 1;
     this.adWrapper.style.display = "block";
 }
@@ -245,7 +247,6 @@ h5Api.Ad.prototype._resumeAfterAd = function(isSuccess) {
 
     // 광고 뷰 관련 초기화
     if (h5Api.isMobile) {
-        this.adPlayImage.removeEventListener("click", this._ad);
         this.adPlayImage.style.opacity = 0;
         this.adWrapper.style.display = "none";
     }
@@ -258,11 +259,14 @@ h5Api.Ad.prototype._resumeAfterAd = function(isSuccess) {
         this.adVideo.style.display = "block";
         delete this._originAdUrl;
     }
+    this.adsManager.destroy();
+    delete this.adsManager;
 }
 
 h5Api.Ad.prototype._onAdError = function(adErrorEvent) {
     console.warn("[h5Api.Ad] ErrorCode "+adErrorEvent.h.h+" : "+adErrorEvent.h.l);
     
+    // adsManager의 Error일 때 해당함
     if (this.adsManager !== undefined)  this.adsManager.destroy();
 
     // 풀슬롯이 아닌 경우, 재도전
