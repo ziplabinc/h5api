@@ -17,7 +17,7 @@ Installation
 
 Testing
 -------------
-- H5game Platform 상에 업로드된 게임이 아니라면 모든 기능은 Test mode로 구동됩니다.
+- h5Api.init 실행 시 runMode 설정을 통해 테스트 모드(h5Api.MODE.TEST)로 구동 가능합니다.
 
 ***
 
@@ -36,6 +36,16 @@ Testing
     * 풀슬롯 : 광고 수급 또는 브라우저 이슈로 인해, 일반형 또는 보상형 광고 재생이 불가능할 때 사용. (포인트 제공 여부는 대체되는 광고의 유형에 종속됨)
 - API 설정 작업은 크게 *초기화, 실행* 으로 이루어집니다.
 
+h5Api.MODE
+-------------
+- h5Api에서 사용 가능한 모드 프리셋입니다.
+    Name                | Type      | Value | Description
+    -----               | -----     | ----- | -----
+    h5Api.MODE.TEST     | Number    | 0     | 테스트 수행 모드.
+    h5Api.MODE.ALL      | Number    | 1     | 모든 기능 사용 가능한 모드. 플랫폼 게임에서 사용됨.
+    h5Api.MODE.AD       | Number    | 2     | 광고 기능만 사용 가능한 모드. 주로 비-플랫폼 게임에서 광고를 호출하기 위해 사용됨.
+    h5Api.MODE.TOKEN    | Number    | 3     | 토큰 팝업 기능만 사용 가능한 모드. 주로 플랫폼 내부에서 사용됨.
+
 h5Api.init
 -------------
 - 광고 생성, 광고 재생 시 호출할 pause/resume 함수 선언, 랭킹 시스템 호출 등의 초기화를 수행합니다.
@@ -45,6 +55,7 @@ h5Api.init
     Name            | Type      | Default   | Description
     -----           | -----     | -----     | -----
     opt             | Object    | {}        | key/value 오브젝트로 이루어진 h5Api.init 옵션 파라미터
+    opt.runMode     | String    | "ALL"     | 모드 설정값
     opt.useReward   | Boolean   | false     | 보상형 광고 사용 여부
     opt.isRank      | Boolean   | false     | 랭킹 시스템의 사용 여부 (사용 시 플랫폼사와의 사전 협의 필요)
     opt.pauseGame   | Function  | -         | 광고 실행 시 동작해야 하는 게임 정지, 사운드 음소거 함수

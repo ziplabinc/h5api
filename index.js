@@ -71,19 +71,34 @@ window.h5Api = new function() {
     }
   }
 
+  // h5Api MODE 추가
+  this.MODE = {};
+  Object.defineProperties(this.MODE, {
+    'TEST':  { value: 0, enumerable: true },
+    'ALL':   { value: 1, enumerable: true },
+    'AD':    { value: 2, enumerable: true },
+    'TOKEN': { value: 3, enumerable: true },
+  });
+  Object.defineProperty(this.MODE, 'allow', {
+    value: {
+      token: [this.MODE.TEST, this.MODE.ALL, this.MODE.TOKEN],
+      rank: [this.MODE.TEST, this.MODE.ALL],
+      ad: [this.MODE.TEST, this.MODE.ALL, this.MODE.AD],
+    }
+  });
+
   // h5Api.data 게임정보 초기화
   try {
     throw JSON.stringify(window.parent.gameData);
   } catch(e) {
-    if(e === undefined || e.name == "TypeError") {
+    if(e === undefined || ["TypeError", "SecurityError"].indexOf(e.name) !== -1) {
+      // SecurityError: Platform in iframe
       // console.error("[h5Api.run] GameData was undefined or TypeError. Abort!");
       // return;
       this.data = {};
-      this.testMode = true;
-      console.warn("[h5Api] Settings not found. Test mode is activated."); // 테스트모드 warn 세팅
+      this.runMode = this.MODE.TOKEN;
     }else {
       this.data = JSON.parse(e);
-      this.testMode = false;
     }
   }
   if(this.data.gn === undefined)          this.data.gn = "0";
@@ -118,18 +133,26 @@ window.h5Api = new function() {
 
     if(this._isInit === "domReady") {
       console.log("[h5Api] Initializing...");
-      // h5Api 초기화
-      this.Token.init();
 
-      var loadArr = [
-        "//api.hifivegame.com/adcode.php?callback=h5Api._adcodeCallback",
-        "//s0.2mdn.net/instream/html5/ima3.js"
-      ];
+      // runMode 설정 : 기본값 ALL
+      this.runMode = (opt.runMode === undefined) ? this.MODE.ALL : opt.runMode;
+      if(this.runMode === this.MODE.TEST) {
+        console.warn("[h5Api] Settings not found. Test mode is activated.");
+        if(opt.gameData !== undefined) {
+          this.data = Object.assign({}, this.data, opt.gameData);
+        }
+      }
 
-      // 플랫폼의 isRank 여부와 게임내 isRank 모두 체크
-      // if(this.data.isRank && opt.isRank === true) loadArr.push("//api.hifivegame.com/rank.php?gd="+this.data.gd);
-      if(this.data.isRank && opt.isRank === true) this.Rank.init();
+      if(this.MODE.allow.token.indexOf(this.runMode) !== -1) {
+        this.Token.init();
+      }
+      
+      if(this.MODE.allow.rank.indexOf(this.runMode) !== -1) {
+        // 플랫폼의 isRank 여부와 게임내 isRank 모두 체크
+        if(this.data.isRank && opt.isRank === true) this.Rank.init();
+      }
 
+      if(this.MODE.allow.ad.indexOf(this.runMode) !== -1) {
         this._loadScript(this.adLoadList, function(useReward) {
           // data.cn 보정
           if(this.adcode.cn.indexOf(this.data.cn) === -1)  this.data.cn = "test";
@@ -159,6 +182,7 @@ window.h5Api = new function() {
 
           this._isInit = "complete";
         }.bind(this, opt.useReward));
+      }
 
     }else {
       setTimeout(function() {
