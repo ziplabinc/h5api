@@ -1,4 +1,4 @@
-<!-- ![Logo](https://app.5gamedom.com/img/icon/zip-logo.png)   -->
+[Logo](http://zip-lab.co.kr/homepage/image/logo-horizontal.png)
 **ZIP-LAB H5game Platform 게임 API**
 =============
 
@@ -8,10 +8,10 @@
 Installation
 -------------
 - 게임 내 메인 html file의 head Tag 내에서 h5api 모듈 파일을 로드합니다.
-- 모듈 Link : https://api.5gamedom.com/h5api/build/h5api2-latest.min.js
+- 모듈 Link : https://api.hifivegame.com/h5api/build/h5api-latest.min.js
     ```
     <head>
-        <script type="text/javascript" src="https://api.5gamedom.com/h5api/build/h5api2-latest.min.js"></script>
+        <script type="text/javascript" src="https://api.hifivegame.com/h5api/build/h5api-latest.min.js"></script>
     </head>
     ```
 
@@ -39,6 +39,7 @@ Testing
 h5Api.MODE
 -------------
 - h5Api에서 사용 가능한 모드 프리셋입니다.
+
     Name                | Type      | Value | Description
     -----               | -----     | ----- | -----
     h5Api.MODE.TEST     | Number    | 0     | 테스트 수행 모드.
@@ -137,6 +138,7 @@ h5Api.setAdcode
 - 비플랫폼 게임의 경우 다른 광고 코드를 삽입해야 하는 경우가 있습니다. 이 경우 해당 메소드를 실행하여 adCode를 재설정합니다.
 
 - h5Api.setAdcode( codeCallback, codeUrl )
+
     Name            | Type          | Default   | Description
     -----           | -----         | -----     | -----
     codeCallback    | Function      | -         | codeUrl 삽입 후 실행할 콜백 함수
