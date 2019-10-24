@@ -1,5 +1,6 @@
-[Logo](http://zip-lab.co.kr/homepage/image/logo-horizontal.png)
-**ZIP-LAB H5game Platform 게임 API**
+<img src="ziplabinc_logo.png" width="200">
+
+**H5game Platform 게임 API**
 =============
 
 광고 및 포인트, 랭킹 기능이 포함된 ZIP-LAB H5game Platform 게임 API입니다.
