@@ -1,3 +1,5 @@
+window.h5Api = window.h5Api || {};
+
 h5Api.Ad = function (adUrl, opt) {
     if (document.body === null || document.body === undefined) {
         console.error("[h5Api.Ad] new h5Api.Ad must be call after window.onload. Abort!");
@@ -345,8 +347,10 @@ h5Api.Ad.prototype._resumeAfterAd = function (isSuccess) {
         this.adVideo.style.display = "block";
         delete this._originAdUrl;
     }
-    this.adsManager.destroy();
-    delete this.adsManager;
+    if (this.adsManager !== undefined) {
+        this.adsManager.destroy();
+        delete this.adsManager;
+    }
 }
 
 h5Api.Ad.prototype._onAdError = function (adErrorEvent) {

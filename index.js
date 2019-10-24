@@ -4,7 +4,7 @@ window.h5Api = new function() {
   // Adcode 관련 초기화
   this.adList = {};
   this.adLoadList = [
-    "//s0.2mdn.net/instream/html5/ima3.js",
+    "//imasdk.googleapis.com/js/sdkloader/ima3.js",
     "//api.hifivegame.com/adcode.php?callback=h5Api._adcodeCallback"
   ];
   this._adcodeCallback = function(json) { this.adcode = json; };
@@ -49,7 +49,11 @@ window.h5Api = new function() {
   if(this.data.matchCost === undefined)   this.data.matchCost = 1;
 
   // h5Api.data 채널명 초기화
-  this.data.cn = document.domain.split(".")[0];
+  if(['127.0.0.1', '::1', 'localhost'].indexOf(this.data.cn) !== -1) {
+    this.data.cn = "test";
+  } else {
+      this.data.cn = document.domain.split(".")[0];
+  }
 
 
   // h5Api._prevOnload =  window.onload || null;
@@ -64,6 +68,19 @@ window.h5Api = new function() {
     if (typeof opt.callback === "function")     this.callback = opt.callback;
     else                                        this.callback = function(){};
 
+    if (opt.ad) {
+        if (opt.ad.url && opt.ad.url.constructor === String) {
+            this.adLoadList[1] = opt.ad.url;
+        }
+        else if (opt.ad.code && opt.ad.code.constructor === Object) {
+            this.adLoadList.splice(1, 1);
+            this.adcode = opt.ad.code;
+        }
+        if (opt.ad.channel && opt.ad.channel.constructor === String) {
+            this.data.cn = opt.ad.channel;
+        }
+    }
+
     if(udfArg) {
       console.error("[h5Api.run] "+udfArg+" was undefined. Abort!");
       return false;
@@ -71,9 +88,9 @@ window.h5Api = new function() {
 
     if(this._isInit === "domReady") {
       console.log("[h5Api] Initializing...");
-
       // runMode 설정 : 기본값 ALL
-      this.runMode = (opt.runMode === undefined) ? this.MODE.ALL : opt.runMode;
+      this.runMode = this.runMode || ((opt.runMode === undefined) ? this.MODE.ALL : opt.runMode);
+
       if(this.runMode === this.MODE.TEST) {
         console.warn("[h5Api] Settings not found. Test mode is activated.");
         if(opt.gameData !== undefined) {

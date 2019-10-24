@@ -57,19 +57,31 @@ module.exports = function(grunt) {
 
     // grunt.registerTask('sourceTest', ['mocha']);
 
-    grunt.registerTask('testSetting',function(){
+    grunt.registerTask('moduleTest',function(){
       grunt.config.set('concat',{
         basic : {
-          src: [libPath + '*.js', 'index.js', srcPath + '*.js'],
+          src: [libPath + '*.js', 'index.js', srcPath + '01-common.js', srcPath + 'ad.js', srcPath + 'style.js'],
           dest: 'build/h5api-test.js'
         },
         options: {
           banner: '/*\n * build date : <%= grunt.template.today("yyyy-mm-dd HH:MM:ss") %>\n */\n',
-          footer: '\nh5Api.VERSION = "Testing on <%= pkg.version %>"'
+          footer: '\nh5Api.VERSION = "Testing on <%= pkg.version %>"; h5Api.runMode = 2;'
         }
       })
     });
 
+    grunt.registerTask('testSetting',function(){
+        grunt.config.set('concat',{
+          basic : {
+            src: [libPath + '*.js', 'index.js', srcPath + '*.js'],
+            dest: 'build/h5api-test.js'
+          },
+          options: {
+            banner: '/*\n * build date : <%= grunt.template.today("yyyy-mm-dd HH:MM:ss") %>\n */\n',
+            footer: '\nh5Api.VERSION = "Testing on <%= pkg.version %>"'
+          }
+        })
+      });
 
     grunt.registerTask('gitpatch', ['gitstash','gitcheckout','gitpull','checkout:master','gitcheckout','gitmerge','version::patch','pkgReload','gitadd','gitcommit','gitpush','concat','uglify']);
     
@@ -78,4 +90,5 @@ module.exports = function(grunt) {
     grunt.registerTask('major', ['version::major','pkgReload','concat', 'uglify']);
     grunt.registerTask('test',  ['testSetting','concat']);
     grunt.registerTask('build', ['pkgReload','concat', 'uglify']);
+    grunt.registerTask('test-ad',  ['moduleTest', 'concat']);
 };
