@@ -60,7 +60,7 @@ module.exports = function(grunt) {
     grunt.registerTask('moduleTest',function(){
       grunt.config.set('concat',{
         basic : {
-          src: [libPath + '*.js', 'index.js', srcPath + '01-common.js', srcPath + 'ad.js', srcPath + 'style.js'],
+          src: [`${libPath}*.js`, 'index.js', `${srcPath}01-common.js`, `${srcPath}ad.js`, `${srcPath}payment.js`, `${srcPath}style.js`],
           dest: 'build/h5api-test.js'
         },
         options: {
