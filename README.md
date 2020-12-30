@@ -1,5 +1,10 @@
 <img src="ziplabinc_logo.png" width="200">
 
+**개요**
+=============
+- hifivegame.com 플랫폼에서 활용하던 라이브러리. 클라이언트에서 로드하여 서버로 광고/포인트 요청을 하거나 payment 요청을 시도함.
+- payment 기능은 ziplabPay로 이전하여 메이헴에서 사용 중.
+
 **H5game Platform 게임 API**
 =============
 

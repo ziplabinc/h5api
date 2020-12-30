@@ -21,17 +21,21 @@ h5Api.Payment = h5Api.payment = new function () {
             style: "white",
             title: "TITLE",
             packageName: "mayhem",
+            serverCode: null,
             userKey: null,
             storeName: "playstore",
             customStationFn: null,
             theme: null
         }, options);
         
+        if(this.options.userKey === null || this.options.serverCode === null) {
+            return console.error('[h5Api.payment] userKey and serverCode are required.');
+        }
         this.style = this.getUiStyle(this.options.style);
         this.setLoader();
     }
     this.open = function () {
-        var url = "/payment/store_item/"+this.options.storeName+"/"+this.options.packageName+"/"+this.options.userKey;
+        var url = "/payment/store_item/"+this.options.storeName+"/"+this.options.packageName+"/"+this.options.serverCode+"/"+this.options.userKey;
         this.httpRequest(this.options.domain + url, null, function (data) {
             try {
                 var res = JSON.parse(data);
@@ -108,7 +112,7 @@ h5Api.Payment = h5Api.payment = new function () {
     // 각 상품의 payload 요청 메소드
     this.getDevPayload = function (productId) {
         this.isLoading = true;
-        var url = "/payment/payload/"+this.options.storeName+"/"+this.options.packageName+"/"+this.options.userKey+"/"+productId;
+        var url = "/payment/payload/"+this.options.storeName+"/"+this.options.packageName+"/"+this.options.serverCode+"/"+this.options.userKey+"/"+productId;
         this.httpRequest(this.options.domain + url, null, function (data) {
             try {
                 var res = JSON.parse(data);
@@ -173,7 +177,8 @@ h5Api.Payment = h5Api.payment = new function () {
             xhttp.send(JSON.stringify({
                 dev_payload: (this.options.storeName == "playstore") ? sig.split(":")[1] : sig,
                 status: "fail_from_client_code"+res,
-                user: this.options.userKey
+                user: this.options.userKey,
+                serverCode: this.options.serverCode
             }));
         }
     }
