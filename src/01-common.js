@@ -33,6 +33,10 @@ h5Api._loadScript = function (url, callback, seq) {
         script.onload = function () {
             callback();
         };
+        script.onerror = function (err) {
+            console.warn('[h5Api] Script load fail: ' + url);
+            callback();
+        }
     }
     script.src = url;
     document.getElementsByTagName("head")[0].appendChild(script);

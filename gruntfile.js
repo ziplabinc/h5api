@@ -18,19 +18,32 @@ module.exports = function(grunt) {
             options: {
                 banner: 'console.log("h5Api version : <%= pkg.version %> build date : <%= grunt.template.today("yyyy-mm-dd HH:MM:ss") %>");'
             },
-            build: {
+            full: {
                 src: buildPath + 'h5api-<%= pkg.version %>.js',
                 dest: buildPath + 'h5api-<%= pkg.version %>.min.js'
+            },
+            ap: {
+                src: buildPath + 'h5api-<%= pkg.version %>.ap.js',
+                dest: buildPath + 'h5api-<%= pkg.version %>.ap.min.js'
             }
         },
         concat:{
-            basic: {
-                src: [libPath + '*.js', 'index.js', srcPath + '*.js'],
-                dest: buildPath + 'h5api-<%= pkg.version %>.js'
-            },
             options: {
               banner: '/*\n * build date : <%= grunt.template.today("yyyy-mm-dd HH:MM:ss") %>\n */\n',
-              footer: '\nh5Api.VERSION = "<%= pkg.version %>"'
+            },
+            basic: {
+                src: [libPath + '*.js', 'index.js', srcPath + '*.js'],
+                dest: buildPath + 'h5api-<%= pkg.version %>.js',
+                options: {
+                  footer: '\nh5Api.VERSION = "<%= pkg.version %>"'
+                }
+            },
+            adPayment: {
+                src: [`${libPath}*.js`, 'index.js', `${srcPath}01-common.js`, `${srcPath}ad.js`, `${srcPath}payment.js`, `${srcPath}style.js`],
+                dest: buildPath + 'h5api-<%= pkg.version %>.ap.js',
+                options: {
+                  footer: '\nh5Api.VERSION = "<%= pkg.version %>"; h5Api.runMode = 2;'
+                }
             }
         }
     });
@@ -60,7 +73,7 @@ module.exports = function(grunt) {
     grunt.registerTask('moduleTest',function(){
       grunt.config.set('concat',{
         basic : {
-          src: [libPath + '*.js', 'index.js', srcPath + '01-common.js', srcPath + 'ad.js', srcPath + 'style.js'],
+          src: [`${libPath}*.js`, 'index.js', `${srcPath}01-common.js`, `${srcPath}ad.js`, `${srcPath}payment.js`, `${srcPath}style.js`],
           dest: 'build/h5api-test.js'
         },
         options: {
@@ -89,6 +102,7 @@ module.exports = function(grunt) {
     grunt.registerTask('minor', ['version::minor','pkgReload','concat', 'uglify']);
     grunt.registerTask('major', ['version::major','pkgReload','concat', 'uglify']);
     grunt.registerTask('test',  ['testSetting','concat']);
-    grunt.registerTask('build', ['pkgReload','concat', 'uglify']);
+    grunt.registerTask('build', ['pkgReload','concat', 'uglify:full']);
     grunt.registerTask('test-ad',  ['moduleTest', 'concat']);
+    grunt.registerTask('adPayment', ['pkgReload','concat:adPayment', 'uglify:ap']); // uglify하면 왜 ima3 날아감?
 };

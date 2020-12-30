@@ -39,11 +39,13 @@ window.h5Api = new function() {
       this.data = JSON.parse(e);
     }
   }
-  if(this.data.gn === undefined)          this.data.gn = "0";
-  if(this.data.gt === undefined)          this.data.gt = "TEST GAME";
-  if(this.data.gi === undefined)          this.data.gi = "../img/icon.jpg";
-  if(this.data.gd === undefined)          this.data.gd = "test-directory";
-  if(this.data.adc === undefined)         this.data.adc = null;
+  // 아래는 광고 데이터
+  if(this.data.gn === undefined)          this.data.gn = "0"; // 게임 no
+  if(this.data.gt === undefined)          this.data.gt = "TEST GAME"; // 타이틀
+  if(this.data.gi === undefined)          this.data.gi = "../img/icon.jpg"; // 이미지
+  if(this.data.gd === undefined)          this.data.gd = "test-directory"; // 디렉토리
+  if(this.data.adc === undefined)         this.data.adc = null; // 채널(adc)
+  // 아래는 랭킹전 데이터
   if(this.data.isRank === undefined)      this.data.isRank = 1;
   if(this.data.accessCode === undefined)  this.data.accessCode = "testCode";
   if(this.data.matchCost === undefined)   this.data.matchCost = 1;
@@ -79,6 +81,9 @@ window.h5Api = new function() {
         if (opt.ad.channel && opt.ad.channel.constructor === String) {
             this.data.cn = opt.ad.channel;
         }
+        if (opt.ad.data && opt.ad.data.constructor === Object) {
+            Object.assign(this.data, opt.ad.data);
+        }
     }
 
     if(udfArg) {
@@ -109,6 +114,11 @@ window.h5Api = new function() {
 
       if(this.MODE.allow.ad.indexOf(this.runMode) !== -1) {
         this._loadScript(this.adLoadList, function(useReward) {
+          if(window.google === undefined || (window.google && window.google.ima === undefined)) {
+              this.isAdblock = true;
+              this._isInit = "blocked";
+              return;
+          }
           // data.cn 보정
           if(this.adcode.cn.indexOf(this.data.cn) === -1)  this.data.cn = "test";
 
@@ -208,8 +218,11 @@ window.h5Api = new function() {
 
       if(!rtn && typeof runCallback == "function")  runCallback();
   
-    // 아직 _isInit 로드 안되어있으면 조금 이후에 재실행
-    }else {
+    } else if(this._isInit == 'blocked') {
+        if (typeof runResumeGame === "function") runResumeGame();
+        if (typeof runCallback === "function") runCallback();
+        if (typeof opt.fail === "function") opt.fail();
+    } else { // 아직 _isInit 로드 안되어있으면 조금 이후에 재실행
       setTimeout(function() {
         this.run(
           Object.assign({ retry: true }, opt)
